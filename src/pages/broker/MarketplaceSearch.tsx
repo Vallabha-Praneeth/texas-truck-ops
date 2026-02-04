@@ -5,7 +5,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { RegionChip, RegionType } from '@/components/RegionChip';
 import { SlotCard, SlotData } from '@/components/SlotCard';
 import { EmptyState } from '@/components/EmptyState';
-import { Search, SlidersHorizontal, MapPin, X, Monitor, CheckCircle2 } from 'lucide-react';
+import { TexasMap, TruckMarker } from '@/components/TexasMap';
+import { Search, SlidersHorizontal, CheckCircle2 } from 'lucide-react';
 
 const regions: RegionType[] = ['DFW', 'Houston', 'Austin', 'San Antonio', 'El Paso', 'RGV'];
 
@@ -54,7 +55,59 @@ const mockSlots: SlotData[] = [
     status: 'available',
     isVerified: true,
   },
+  {
+    id: '5',
+    truckName: 'LED-SA-001',
+    screenSize: '16x8 ft',
+    region: 'San Antonio',
+    date: 'Jan 19',
+    timeWindow: '5PM-9PM',
+    price: 1900,
+    status: 'offered',
+    isVerified: true,
+  },
+  {
+    id: '6',
+    truckName: 'LED-EP-001',
+    screenSize: '12x6 ft',
+    region: 'El Paso',
+    date: 'Jan 20',
+    timeWindow: '6PM-10PM',
+    price: 1600,
+    status: 'available',
+    isVerified: false,
+  },
 ];
+
+// Convert slots to map markers with coordinates
+const slotToMarker = (slot: SlotData, index: number): TruckMarker => {
+  const regionCoords: Record<RegionType, { lat: number; lng: number }> = {
+    'DFW': { lat: 32.7767, lng: -96.7970 },
+    'Houston': { lat: 29.7604, lng: -95.3698 },
+    'Austin': { lat: 30.2672, lng: -97.7431 },
+    'San Antonio': { lat: 29.4241, lng: -98.4936 },
+    'El Paso': { lat: 31.7619, lng: -106.4850 },
+    'RGV': { lat: 26.2034, lng: -98.2300 },
+  };
+  
+  const base = regionCoords[slot.region];
+  // Add slight offset for multiple trucks in same region
+  const offset = (index % 5) * 0.02;
+  
+  return {
+    id: slot.id,
+    truckName: slot.truckName,
+    region: slot.region,
+    lat: base.lat + offset,
+    lng: base.lng + offset,
+    status: slot.status,
+    price: slot.price,
+    date: slot.date,
+    timeWindow: slot.timeWindow,
+    screenSize: slot.screenSize,
+    isVerified: slot.isVerified,
+  };
+};
 
 const MarketplaceSearch = () => {
   const navigate = useNavigate();
@@ -84,12 +137,18 @@ const MarketplaceSearch = () => {
     return true;
   });
 
+  const mapMarkers = filteredSlots.map((slot, index) => slotToMarker(slot, index));
+
   const activeFilterCount = [
     filters.verifiedOnly,
     filters.minScreenWidth,
     filters.maxPrice,
     filters.dateFrom,
   ].filter(Boolean).length;
+
+  const handleMarkerClick = (marker: TruckMarker) => {
+    navigate(`/broker/slots/${marker.id}`);
+  };
 
   return (
     <div className="mobile-container">
@@ -227,22 +286,13 @@ const MarketplaceSearch = () => {
 
       <div className="screen-padding pt-2">
         {viewMode === 'map' ? (
-          /* Map View */
-          <div className="map-placeholder h-80 rounded-xl relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 text-primary mx-auto mb-2" />
-                <p className="text-muted-foreground">Texas Region Map</p>
-                <p className="text-sm text-muted-foreground">
-                  {filteredSlots.length} slots in selected areas
-                </p>
-              </div>
-            </div>
-            {/* Region markers */}
-            <div className="absolute top-1/4 left-1/2 w-3 h-3 bg-region-dfw rounded-full animate-pulse" title="DFW" />
-            <div className="absolute top-1/2 right-1/4 w-3 h-3 bg-region-houston rounded-full animate-pulse" title="Houston" />
-            <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-region-austin rounded-full animate-pulse" title="Austin" />
-          </div>
+          /* Interactive Map View */
+          <TexasMap
+            markers={mapMarkers}
+            selectedRegions={selectedRegions}
+            onMarkerClick={handleMarkerClick}
+            className="h-[400px]"
+          />
         ) : (
           /* List View */
           <div className="space-y-3">

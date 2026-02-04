@@ -47,7 +47,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({ slot, onClick, className }) 
           <RegionChip region={slot.region} className="mt-1" />
         </div>
         <div className="flex flex-col items-end gap-2">
-          <StatusBadge status={slot.status} />
+          <StatusBadge status={slot.status} animated={slot.status === 'available' || slot.status === 'running'} />
           <div className="flex items-center text-primary font-bold text-lg">
             <DollarSign className="w-4 h-4" />
             {slot.price.toLocaleString()}
