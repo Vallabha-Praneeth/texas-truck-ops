@@ -57,6 +57,30 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Status colors
+        status: {
+          available: "hsl(var(--status-available))",
+          "available-bg": "hsl(var(--status-available-bg))",
+          offered: "hsl(var(--status-offered))",
+          "offered-bg": "hsl(var(--status-offered-bg))",
+          booked: "hsl(var(--status-booked))",
+          "booked-bg": "hsl(var(--status-booked-bg))",
+          running: "hsl(var(--status-running))",
+          "running-bg": "hsl(var(--status-running-bg))",
+          completed: "hsl(var(--status-completed))",
+          "completed-bg": "hsl(var(--status-completed-bg))",
+          cancelled: "hsl(var(--status-cancelled))",
+          "cancelled-bg": "hsl(var(--status-cancelled-bg))",
+        },
+        // Region colors
+        region: {
+          dfw: "hsl(var(--region-dfw))",
+          houston: "hsl(var(--region-houston))",
+          austin: "hsl(var(--region-austin))",
+          sanantonio: "hsl(var(--region-sanantonio))",
+          elpaso: "hsl(var(--region-elpaso))",
+          rgv: "hsl(var(--region-rgv))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,25 +89,30 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.05)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
+      },
+      fontFamily: {
+        sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Segoe UI", "Roboto", "sans-serif"],
       },
     },
   },
