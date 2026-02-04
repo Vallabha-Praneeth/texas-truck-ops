@@ -318,3 +318,29 @@
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
 }
+
+/* Mapbox popup customization */
+.mapboxgl-popup-content {
+  @apply bg-card border border-border rounded-xl shadow-lg p-0 !important;
+  background: hsl(var(--card)) !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: hsl(var(--card)) !important;
+}
+
+.mapboxgl-popup-close-button {
+  @apply text-muted-foreground hover:text-foreground text-xl w-8 h-8 flex items-center justify-center;
+}
+
+.mapboxgl-ctrl-group {
+  @apply bg-card border-border !important;
+}
+
+.mapboxgl-ctrl-group button {
+  @apply text-foreground !important;
+}
+
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}

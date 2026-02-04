@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { BottomNav } from '@/components/BottomNav';
 import { StatusBadge } from '@/components/StatusBadge';
+import { StatusDisplay } from '@/components/StatusDisplay';
 import { RegionChip } from '@/components/RegionChip';
 import { Truck, Calendar, Clock, MapPin, Navigation, Phone, User, Camera, CheckCircle2 } from 'lucide-react';
 
@@ -45,22 +46,13 @@ const RunDetail = () => {
       <ScreenHeader title="Run Details" showBack />
 
       <div className="screen-padding space-y-6">
-        {/* Status Banner */}
-        <div className={`p-4 rounded-xl border ${
-          mockRun.status === 'running' 
-            ? 'bg-status-running-bg border-status-running/20' 
-            : 'bg-status-booked-bg border-status-booked/20'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <StatusBadge status={mockRun.status} />
-            <span className="text-lg font-bold text-foreground">${mockRun.payout}</span>
-          </div>
-          <div className="flex items-center gap-2 text-foreground">
-            <Truck className="w-5 h-5 text-primary" />
-            <span className="font-semibold">{mockRun.truckName}</span>
-            <span className="text-muted-foreground">• {mockRun.plateNumber}</span>
-          </div>
-        </div>
+        {/* Status Banner with Animation */}
+        <StatusDisplay
+          status={mockRun.status}
+          title="Current Status"
+          subtitle={`${mockRun.truckName} • ${mockRun.plateNumber}`}
+          value={`$${mockRun.payout}`}
+        />
 
         {/* Schedule */}
         <div className="card-gradient p-4 space-y-3">
