@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: ledboard-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledboard_test
+    ports:
+      - "5434:5432"
+    volumes:
+      - ledboard-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ledboard-network
+
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: ledboard-api-test
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ledboard_test
+      JWT_SECRET: docker-test-secret-key-not-for-production
+      JWT_EXPIRY: 7d
+      INTERNAL_SERVICE_KEY: docker-internal-service-key
+      REDIS_URL: ""
+      TEST_MODE: "true"
+      OTP_EXPIRY_MINUTES: 10
+      OTP_LENGTH: 6
+      RATE_LIMIT_TTL: 60
+      RATE_LIMIT_MAX: 100
+    ports:
+      - "4001:3001"
+    networks:
+      - ledboard-network
+    #healthcheck:
+    #  test: [ "CMD", "curl", "http://localhost:3001/api" ]
+    #  interval: 10s
+    #  timeout: 5s
+    #  retries: 5
+    #  start_period: 30s
+
+    # Next.js Admin Frontend
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4001/api
+    container_name: ledboard-admin-test
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:4001/api
+      JWT_SECRET: docker-test-secret-key-not-for-production
+    ports:
+      - "4000:3000"
+    networks:
+      - ledboard-network
+
+volumes:
+  ledboard-db-data:
+    driver: local
+
+networks:
+  ledboard-network:
+    driver: bridge
