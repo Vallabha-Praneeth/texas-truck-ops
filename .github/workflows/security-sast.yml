@@ -1,6 +1,7 @@
 name: Security SAST
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'apps/admin/**'
@@ -67,12 +68,12 @@ jobs:
           config: >-
             p/owasp-top-ten
             p/security-audit
-          generateSarif: true
+          args: --sarif --output=semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       - name: Upload Semgrep SARIF
-        if: always()
+        if: always() && hashFiles('semgrep.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
