@@ -68,7 +68,6 @@ jobs:
           config: >-
             p/owasp-top-ten
             p/security-audit
-          args: --sarif --output=semgrep.sarif
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
