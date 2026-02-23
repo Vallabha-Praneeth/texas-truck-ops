@@ -1,0 +1,255 @@
+name: Security Headers & Configuration
+
+on:
+  pull_request:
+    paths:
+      - 'apps/admin/**'
+      - 'packages/api/**'
+      - 'Dockerfile*'
+      - 'docker-compose.yml'
+      - '.github/workflows/security-headers.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/admin/**'
+      - 'packages/api/**'
+  schedule:
+    - cron: '0 8 * * 4'  # Thursday 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-secrets:
+    name: Validate Target URLs
+    runs-on: ubuntu-latest
+    outputs:
+      admin-configured: ${{ steps.check.outputs.admin }}
+      api-configured: ${{ steps.check.outputs.api }}
+    steps:
+      - id: check
+        run: |
+          admin_url="${{ secrets.ZAP_TARGET_ADMIN_URL }}"
+          api_url="${{ secrets.ZAP_TARGET_API_URL }}"
+          
+          if [ -n "$admin_url" ]; then
+            echo "admin=true" >> $GITHUB_OUTPUT
+            echo "✓ Admin URL configured"
+          else
+            echo "admin=false" >> $GITHUB_OUTPUT
+            echo "::warning::Admin URL not configured - security header checks will be skipped"
+          fi
+          
+          if [ -n "$api_url" ]; then
+            echo "api=true" >> $GITHUB_OUTPUT
+            echo "✓ API URL configured"
+          else
+            echo "api=false" >> $GITHUB_OUTPUT
+            echo "::warning::API URL not configured - CORS checks will be skipped"
+          fi
+
+  admin-headers:
+    name: Admin Security Headers
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    if: needs.check-secrets.outputs.admin-configured == 'true'
+    steps:
+      - name: Check Admin Headers
+        run: |
+          echo "Testing security headers for Admin app..."
+          response=$(curl -sI "${{ secrets.ZAP_TARGET_ADMIN_URL }}" || echo "CURL_FAILED")
+          
+          if [ "$response" = "CURL_FAILED" ]; then
+            echo "::error::Failed to connect to admin URL"
+            exit 1
+          fi
+          
+          echo "Response headers:"
+          echo "$response"
+          echo ""
+          
+          # Track failures
+          failures=0
+          
+          # CSP check
+          if echo "$response" | grep -qi "content-security-policy:"; then
+            echo "✓ Content-Security-Policy header present"
+          else
+            echo "::error::Missing Content-Security-Policy header"
+            ((failures++))
+          fi
+          
+          # HSTS check
+          if echo "$response" | grep -qi "strict-transport-security:"; then
+            echo "✓ Strict-Transport-Security header present"
+          else
+            echo "::error::Missing Strict-Transport-Security header"
+            ((failures++))
+          fi
+          
+          # X-Frame-Options check
+          if echo "$response" | grep -qi "x-frame-options:"; then
+            echo "✓ X-Frame-Options header present"
+          else
+            echo "::error::Missing X-Frame-Options header"
+            ((failures++))
+          fi
+          
+          # X-Content-Type-Options check
+          if echo "$response" | grep -qi "x-content-type-options:"; then
+            echo "✓ X-Content-Type-Options header present"
+          else
+            echo "::warning::Missing X-Content-Type-Options header (recommended)"
+          fi
+          
+          # Referrer-Policy check
+          if echo "$response" | grep -qi "referrer-policy:"; then
+            echo "✓ Referrer-Policy header present"
+          else
+            echo "::warning::Missing Referrer-Policy header (recommended)"
+          fi
+          
+          # Exit if critical headers missing
+          if [ $failures -gt 0 ]; then
+            echo "::error::$failures critical security header(s) missing"
+            exit 1
+          fi
+
+  api-cors:
+    name: API CORS Configuration
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    if: needs.check-secrets.outputs.api-configured == 'true'
+    steps:
+      - name: Check API CORS
+        run: |
+          echo "Testing CORS configuration for API..."
+          api_url="${{ secrets.ZAP_TARGET_API_URL }}"
+          
+          # Test with evil origin
+          response=$(curl -sI -H "Origin: https://evil.com" "${api_url}/api/health" || echo "CURL_FAILED")
+          
+          if [ "$response" = "CURL_FAILED" ]; then
+            echo "::error::Failed to connect to API URL"
+            exit 1
+          fi
+          
+          echo "CORS response headers:"
+          echo "$response"
+          echo ""
+          
+          # Check for overly permissive CORS
+          if echo "$response" | grep -qi "access-control-allow-origin: \*"; then
+            echo "::error::CORS allows all origins (*) - major security risk!"
+            exit 1
+          fi
+          
+          # Check if evil origin is allowed
+          if echo "$response" | grep -qi "access-control-allow-origin: https://evil.com"; then
+            echo "::error::CORS allows unauthorized origin (evil.com)"
+            exit 1
+          fi
+          
+          # Check for CORS headers (should exist but be restrictive)
+          if echo "$response" | grep -qi "access-control-allow-origin:"; then
+            allowed_origin=$(echo "$response" | grep -i "access-control-allow-origin:" | cut -d: -f2- | tr -d ' \r')
+            echo "✓ CORS configured with restricted origin: $allowed_origin"
+          else
+            echo "✓ No CORS headers (API properly restricts cross-origin requests)"
+          fi
+
+  api-security-headers:
+    name: API Security Headers
+    runs-on: ubuntu-latest
+    needs: check-secrets
+    if: needs.check-secrets.outputs.api-configured == 'true'
+    steps:
+      - name: Check API Headers
+        run: |
+          echo "Testing security headers for API..."
+          response=$(curl -sI "${{ secrets.ZAP_TARGET_API_URL }}/api/health" || echo "CURL_FAILED")
+          
+          if [ "$response" = "CURL_FAILED" ]; then
+            echo "::error::Failed to connect to API health endpoint"
+            exit 1
+          fi
+          
+          echo "Response headers:"
+          echo "$response"
+          echo ""
+          
+          failures=0
+          
+          # HSTS check (critical for API)
+          if echo "$response" | grep -qi "strict-transport-security:"; then
+            echo "✓ Strict-Transport-Security header present"
+          else
+            echo "::error::Missing Strict-Transport-Security header"
+            ((failures++))
+          fi
+          
+          # X-Content-Type-Options check
+          if echo "$response" | grep -qi "x-content-type-options: nosniff"; then
+            echo "✓ X-Content-Type-Options: nosniff present"
+          else
+            echo "::warning::Missing X-Content-Type-Options: nosniff (recommended)"
+          fi
+          
+          # Check for dangerous headers that shouldn't be present
+          if echo "$response" | grep -qi "x-powered-by:"; then
+            powered_by=$(echo "$response" | grep -i "x-powered-by:" | cut -d: -f2-)
+            echo "::warning::X-Powered-By header leaks technology stack:$powered_by"
+          else
+            echo "✓ X-Powered-By header removed (good)"
+          fi
+          
+          # Server header check
+          if echo "$response" | grep -qi "server: "; then
+            server=$(echo "$response" | grep -i "server:" | cut -d: -f2-)
+            echo "::notice::Server header present:$server - consider removing for security"
+          fi
+          
+          if [ $failures -gt 0 ]; then
+            echo "::error::$failures critical API security header(s) missing"
+            exit 1
+          fi
+
+  summary:
+    name: Security Configuration Summary
+    runs-on: ubuntu-latest
+    needs: [check-secrets, admin-headers, api-cors, api-security-headers]
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## Security Configuration Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.admin-headers.result }}" = "success" ]; then
+            echo "✅ Admin security headers configured correctly" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.admin-headers.result }}" = "skipped" ]; then
+            echo "⏭️ Admin headers check skipped (URL not configured)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Admin security headers check failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.api-cors.result }}" = "success" ]; then
+            echo "✅ API CORS configured correctly" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.api-cors.result }}" = "skipped" ]; then
+            echo "⏭️ API CORS check skipped (URL not configured)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ API CORS check failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.api-security-headers.result }}" = "success" ]; then
+            echo "✅ API security headers configured correctly" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.api-security-headers.result }}" = "skipped" ]; then
+            echo "⏭️ API headers check skipped (URL not configured)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ API security headers check failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: Configure \`ZAP_TARGET_ADMIN_URL\` and \`ZAP_TARGET_API_URL\` secrets to enable all checks." >> $GITHUB_STEP_SUMMARY
