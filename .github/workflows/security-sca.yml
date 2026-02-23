@@ -79,14 +79,6 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies (pnpm)
-        if: steps.pm.outputs.manager == 'pnpm'
-        run: pnpm install --frozen-lockfile
-
-      - name: Install dependencies (npm)
-        if: steps.pm.outputs.manager == 'npm'
-        run: npm ci
-
       - name: Run dependency audit
         id: audit
         continue-on-error: true
