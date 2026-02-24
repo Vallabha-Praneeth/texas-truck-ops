@@ -110,6 +110,7 @@ jobs:
           allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
           cmd_options: '--autooff -I -m 15 -T 30'
+          artifact_name: 'zapscanadmin'
 
       - name: Gate fail-level alerts (Admin)
         run: |
@@ -183,6 +184,7 @@ jobs:
           allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
           cmd_options: '--autooff -I -m 15 -T 30'
+          artifact_name: 'zapscanapi'
 
       - name: Gate fail-level alerts (API)
         run: |
