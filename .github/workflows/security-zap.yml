@@ -105,6 +105,7 @@ jobs:
       - name: ZAP Baseline Scan
         run: |
           docker run --rm \
+            -u root \
             -v "$PWD:/zap/wrk/:rw" \
             --network=host \
             -t ghcr.io/zaproxy/zaproxy:stable \
@@ -186,6 +187,7 @@ jobs:
       - name: ZAP Baseline Scan
         run: |
           docker run --rm \
+            -u root \
             -v "$PWD:/zap/wrk/:rw" \
             --network=host \
             -t ghcr.io/zaproxy/zaproxy:stable \
