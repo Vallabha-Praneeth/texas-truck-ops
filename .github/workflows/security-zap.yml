@@ -107,8 +107,9 @@ jobs:
         with:
           target: ${{ secrets.ZAP_TARGET_ADMIN_URL }}
           fail_action: true
+          allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
-          cmd_options: '--autooff -m 15 -T 30'
+          cmd_options: '--autooff -I -m 15 -T 30'
           artifact_name: 'zap-admin-baseline'
       
       - name: Upload ZAP Report
@@ -152,8 +153,9 @@ jobs:
         with:
           target: ${{ secrets.ZAP_TARGET_API_URL }}
           fail_action: true
+          allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
-          cmd_options: '--autooff -m 15 -T 30'
+          cmd_options: '--autooff -I -m 15 -T 30'
           artifact_name: 'zap-api-baseline'
       
       - name: Upload ZAP Report
