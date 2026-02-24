@@ -106,11 +106,39 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: ${{ secrets.ZAP_TARGET_ADMIN_URL }}
-          fail_action: true
+          fail_action: false
           allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
           cmd_options: '--autooff -I -m 15 -T 30'
           artifact_name: 'zap-admin-baseline'
+
+      - name: Gate fail-level alerts (Admin)
+        run: |
+          fail_ids_json=$(
+            awk -F '\t' '
+              $1 ~ /^[0-9]+$/ && $2 == "FAIL" {
+                if (ids != "") ids = ids ","
+                ids = ids "\"" $1 "\""
+              }
+              END { print "[" ids "]" }
+            ' .zap/baseline-rules.tsv
+          )
+
+          fail_count=$(
+            jq --argjson fail_ids "$fail_ids_json" '
+              [.site[]?.alerts[]? | select(.pluginid as $id | ($fail_ids | index($id)) != null)] | length
+            ' report_json.json
+          )
+
+          echo "Fail-level alerts detected (admin): $fail_count"
+          if [ "$fail_count" -gt 0 ]; then
+            echo "::error::Admin ZAP report contains fail-level alerts"
+            jq --argjson fail_ids "$fail_ids_json" '
+              .site[]?.alerts[]? | select(.pluginid as $id | ($fail_ids | index($id)) != null) |
+              {pluginid, name, riskdesc, count}
+            ' report_json.json
+            exit 1
+          fi
       
       - name: Upload ZAP Report
         if: always()
@@ -152,11 +180,39 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: ${{ secrets.ZAP_TARGET_API_URL }}
-          fail_action: true
+          fail_action: false
           allow_issue_writing: false
           rules_file_name: '.zap/baseline-rules.tsv'
           cmd_options: '--autooff -I -m 15 -T 30'
           artifact_name: 'zap-api-baseline'
+
+      - name: Gate fail-level alerts (API)
+        run: |
+          fail_ids_json=$(
+            awk -F '\t' '
+              $1 ~ /^[0-9]+$/ && $2 == "FAIL" {
+                if (ids != "") ids = ids ","
+                ids = ids "\"" $1 "\""
+              }
+              END { print "[" ids "]" }
+            ' .zap/baseline-rules.tsv
+          )
+
+          fail_count=$(
+            jq --argjson fail_ids "$fail_ids_json" '
+              [.site[]?.alerts[]? | select(.pluginid as $id | ($fail_ids | index($id)) != null)] | length
+            ' report_json.json
+          )
+
+          echo "Fail-level alerts detected (api): $fail_count"
+          if [ "$fail_count" -gt 0 ]; then
+            echo "::error::API ZAP report contains fail-level alerts"
+            jq --argjson fail_ids "$fail_ids_json" '
+              .site[]?.alerts[]? | select(.pluginid as $id | ($fail_ids | index($id)) != null) |
+              {pluginid, name, riskdesc, count}
+            ' report_json.json
+            exit 1
+          fi
       
       - name: Upload ZAP Report
         if: always()
