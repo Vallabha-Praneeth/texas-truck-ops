@@ -1,0 +1,46 @@
+# ZAP Baseline Scan Rules Configuration
+# Format: <rule-id>	<action>	<threshold>
+# Actions: IGNORE, WARN, FAIL
+# Thresholds: OFF, LOW, MEDIUM, HIGH
+
+# === Critical Vulnerabilities (FAIL) ===
+40012	FAIL	HIGH	# Cross-Site Scripting (Reflected)
+40014	FAIL	HIGH	# Cross-Site Scripting (Persistent)
+40018	FAIL	HIGH	# SQL Injection
+40019	FAIL	HIGH	# SQL Injection - SQLite
+40020	FAIL	HIGH	# SQL Injection - MySQL
+40021	FAIL	HIGH	# SQL Injection - PostgreSQL
+90033	FAIL	HIGH	# Loosely Scoped Cookie
+10094	FAIL	HIGH	# Base64 Disclosure (if contains sensitive data)
+10095	FAIL	HIGH	# Backup File Disclosure
+
+# === High Priority Warnings (WARN) ===
+10015	WARN	MEDIUM	# Re-examine Cache-control Directives
+10017	WARN	MEDIUM	# Cross-Domain JavaScript Source File Inclusion
+10023	WARN	MEDIUM	# Information Disclosure - Debug Error Messages
+10096	WARN	MEDIUM	# Timestamp Disclosure
+10109	WARN	MEDIUM	# Modern Web Application (informational)
+
+# === Framework-Specific Ignores ===
+10049	IGNORE	OFF	# Storable and Cacheable Content (Next.js uses caching)
+10055	IGNORE	OFF	# CSP Scanner (validated separately in security-headers workflow)
+10202	IGNORE	OFF	# Absence of Anti-CSRF Tokens (SPA uses JWT, not cookie-based sessions)
+
+# === Security Headers (Validated Separately) ===
+10020	WARN	LOW	# X-Frame-Options Header
+10021	WARN	LOW	# X-Content-Type-Options Header
+10035	WARN	LOW	# Strict-Transport-Security Header
+10038	WARN	LOW	# Content Security Policy
+
+# === Cookie Security ===
+10054	WARN	MEDIUM	# Cookie without SameSite Attribute
+90011	WARN	MEDIUM	# Charset Mismatch
+90022	WARN	MEDIUM	# Application Error Disclosure
+
+# === Information Disclosure (Low Priority) ===
+10037	WARN	LOW	# Server Leaks Information via "X-Powered-By"
+10050	WARN	LOW	# Retrieved from Cache
+10098	WARN	LOW	# Cross-Domain Misconfiguration
+
+# === Staging/Localhost Specific Ignores ===
+10054	IGNORE	OFF	# Cookie without Secure Flag (acceptable for localhost staging)
