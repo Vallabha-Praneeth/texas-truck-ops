@@ -128,7 +128,20 @@ jobs:
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
-          exit-code: '1'
+          exit-code: '0'
+
+      - name: Gate high/critical vulnerabilities
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            aquasec/trivy:0.56.1 \
+            fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --no-progress \
+            .
 
       - name: Upload SARIF
         if: always()
