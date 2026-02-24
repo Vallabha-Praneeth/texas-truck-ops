@@ -103,14 +103,21 @@ jobs:
           fi
       
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: ${{ secrets.ZAP_TARGET_ADMIN_URL }}
-          fail_action: false
-          allow_issue_writing: false
-          rules_file_name: '.zap/baseline-rules.tsv'
-          cmd_options: '--autooff -I -m 15 -T 30'
-          artifact_name: 'zapscanadmin'
+        run: |
+          docker run --rm \
+            -v "$PWD:/zap/wrk/:rw" \
+            --network=host \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t "${{ secrets.ZAP_TARGET_ADMIN_URL }}" \
+            -J report_json.json \
+            -w report_md.md \
+            -r report_html.html \
+            --autooff \
+            -I \
+            -m 15 \
+            -T 30 \
+            -c .zap/baseline-rules.tsv
 
       - name: Gate fail-level alerts (Admin)
         run: |
@@ -177,14 +184,21 @@ jobs:
           fi
       
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: ${{ secrets.ZAP_TARGET_API_URL }}
-          fail_action: false
-          allow_issue_writing: false
-          rules_file_name: '.zap/baseline-rules.tsv'
-          cmd_options: '--autooff -I -m 15 -T 30'
-          artifact_name: 'zapscanapi'
+        run: |
+          docker run --rm \
+            -v "$PWD:/zap/wrk/:rw" \
+            --network=host \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t "${{ secrets.ZAP_TARGET_API_URL }}" \
+            -J report_json.json \
+            -w report_md.md \
+            -r report_html.html \
+            --autooff \
+            -I \
+            -m 15 \
+            -T 30 \
+            -c .zap/baseline-rules.tsv
 
       - name: Gate fail-level alerts (API)
         run: |
