@@ -1,6 +1,7 @@
 name: Security SAST
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'apps/admin/**'
@@ -8,6 +9,10 @@ on:
       - 'packages/api/**'
       - 'packages/shared/**'
       - 'packages/db/**'
+      - 'Dockerfile*'
+      - 'docker-compose.yml'
+      - '*.config.{js,ts,mjs}'
+      - 'tsconfig*.json'
       - '.github/workflows/security-*.yml'
       - 'docs/security/**'
   push:
@@ -18,6 +23,10 @@ on:
       - 'packages/api/**'
       - 'packages/shared/**'
       - 'packages/db/**'
+      - 'Dockerfile*'
+      - 'docker-compose.yml'
+      - '*.config.{js,ts,mjs}'
+      - 'tsconfig*.json'
       - '.github/workflows/security-*.yml'
       - 'docs/security/**'
   schedule:
@@ -61,3 +70,23 @@ jobs:
             p/security-audit
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      - name: Check for critical findings
+        if: always()
+        run: |
+          if [ -f semgrep.sarif ]; then
+            critical=$(jq '[.runs[].results[] | select(.level=="error")] | length' semgrep.sarif || echo "0")
+            high=$(jq '[.runs[].results[] | select(.level=="warning")] | length' semgrep.sarif || echo "0")
+            echo "Found $critical critical and $high high severity findings"
+            if [ "$critical" -gt 0 ]; then
+              echo "::error::Critical security issues detected by Semgrep"
+              exit 1
+            fi
+          fi

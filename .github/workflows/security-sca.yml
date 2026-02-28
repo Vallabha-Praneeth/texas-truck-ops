@@ -1,6 +1,7 @@
 name: Security SCA
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'apps/admin/**'
@@ -11,6 +12,9 @@ on:
       - 'pnpm-lock.yaml'
       - 'package.json'
       - 'pnpm-workspace.yaml'
+      - 'Dockerfile*'
+      - 'docker-compose.yml'
+      - '*.config.{js,ts,mjs}'
       - '.github/workflows/security-*.yml'
       - 'docs/security/**'
   push:
@@ -24,6 +28,9 @@ on:
       - 'pnpm-lock.yaml'
       - 'package.json'
       - 'pnpm-workspace.yaml'
+      - 'Dockerfile*'
+      - 'docker-compose.yml'
+      - '*.config.{js,ts,mjs}'
       - '.github/workflows/security-*.yml'
       - 'docs/security/**'
   schedule:
@@ -41,20 +48,69 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Detect package manager
+        id: pm
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+          elif [ -f package-lock.json ]; then
+            echo "manager=npm" >> $GITHUB_OUTPUT
+          else
+            echo "manager=none" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Setup Node
+      - name: Setup pnpm
+        if: steps.pm.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node (pnpm)
+        if: steps.pm.outputs.manager == 'pnpm'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Node (npm)
+        if: steps.pm.outputs.manager == 'npm'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-      - name: Run pnpm audit (high+)
-        run: pnpm audit --audit-level high
+      - name: Run dependency audit
+        id: audit
+        continue-on-error: true
+        run: |
+          set +e
+          if [ "${{ steps.pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm audit --audit-level high --json > audit-results.json
+            exit_code=$?
+          elif [ "${{ steps.pm.outputs.manager }}" = "npm" ]; then
+            npm audit --audit-level=high --json > audit-results.json
+            exit_code=$?
+          else
+            echo '{"note":"No pnpm-lock.yaml or package-lock.json found; dependency audit skipped"}' > audit-results.json
+            exit_code=0
+          fi
+          set -e
+          echo "exit-code=$exit_code" >> $GITHUB_OUTPUT
+
+      - name: Upload audit results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-audit-results
+          path: audit-results.json
+          retention-days: 30
+
+      - name: Fail on high/critical vulnerabilities
+        if: steps.audit.outputs.exit-code != '0'
+        run: |
+          echo "::error::Found high or critical npm vulnerabilities"
+          cat audit-results.json
+          exit 1
 
   trivy-fs:
     name: Trivy Filesystem Scan
@@ -68,12 +124,28 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
+          scanners: vuln
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
-          exit-code: '1'
+          exit-code: '0'
+
+      - name: Gate high/critical vulnerabilities
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            aquasec/trivy:0.56.1 \
+            fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --no-progress \
+            .
 
       - name: Upload SARIF
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
+          category: trivy-fs
