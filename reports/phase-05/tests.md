@@ -365,3 +365,34 @@ Checkpoint stability result:
 - iOS: PASS (stable, 3x consecutive)
 - Mobile release checkpoint: PASS
 - Phase 05 status: COMPLETE
+
+## CI Security Workflow Evidence (2026-02-28)
+
+Reference branch/SHA:
+- branch: `release/android-rc1`
+- sha: `5575332c253f8b9bcd5ec280716ef25cb222d317`
+
+Workflow dispatch runs:
+1. Security SAST
+- run id: `22516007042`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516007042`
+- conclusion: `success`
+
+2. Security SCA
+- run id: `22516007082`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516007082`
+- conclusion: `success`
+
+3. Security ZAP Baseline
+- run id: `22516003921`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516003921`
+- conclusion: `success`
+
+4. Security Headers & Configuration
+- run id: `22516007090`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516007090`
+- conclusion: `success`
+
+Notes:
+- First ZAP attempt on prior SHA failed due missing `.zap/baseline-rules.tsv`; fixed by committing the rules file, then rerun passed on the release SHA above.
+- `mobile-release-checkpoint.yml` cannot be dispatched yet because GitHub only allows dispatch for workflows present on the default branch.
