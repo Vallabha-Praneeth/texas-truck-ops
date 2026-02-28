@@ -34,6 +34,7 @@ Owner: Engineering
 - Phase 03: COMPLETE (reports available under `reports/phase-03/`).
 - Phase 04: COMPLETE (reports available under `reports/phase-04/`).
 - Phase 05: IN_PROGRESS (Android checkpoint green; iOS checkpoint pending decision/execution).
+  - **Waiver**: iOS checkpoint blocked by host Metro/bundle environment (No bundle URL present) on 2026-02-28.
 
 ## Global Definition of Done (applies to every active phase)
 1. Scope implementation for that phase is complete.
