@@ -25,7 +25,7 @@ Owner: Engineering
 - Mobile release checkpoints are re-enabled as explicit commands/workflows, gated by platform prerequisites (built app artifacts + device/simulator toolchains).
 - Mobile runtime bootstrap config is corrected for Expo monorepo execution (`apps/mobile/index.js` entry + valid Babel preset wiring).
 - Latest Android release checkpoint evidence (2026-02-28) is GREEN with 3 consecutive full audit passes (`3/3` specs each run).
-- iOS release checkpoint is still pending host/runtime execution for final cross-platform closure.
+- iOS release checkpoint evidence (2026-02-28) is GREEN with 3 consecutive Appium suite passes (`3/3` specs each run).
 
 ## Phase Progress (Updated 2026-02-28)
 - Phase 00: COMPLETE (reports available under `reports/phase-00/`).
@@ -33,8 +33,8 @@ Owner: Engineering
 - Phase 02: COMPLETE (reports available under `reports/phase-02/`).
 - Phase 03: COMPLETE (reports available under `reports/phase-03/`).
 - Phase 04: COMPLETE (reports available under `reports/phase-04/`).
-- Phase 05: IN_PROGRESS (Android checkpoint green; iOS checkpoint pending decision/execution).
-  - **Waiver**: iOS checkpoint blocked by host Metro/bundle environment (No bundle URL present) on 2026-02-28.
+- Phase 05: COMPLETE (web/API gates green; Android + iOS mobile release checkpoints green).
+  - Previous iOS waiver is resolved by Metro/bundle preflight hardening plus successful iOS checkpoint execution on 2026-02-28.
 
 ## Global Definition of Done (applies to every active phase)
 1. Scope implementation for that phase is complete.

@@ -79,9 +79,9 @@ Phase: 05 - Hardening, CI Gates, and Release Readiness
 - `pnpm test`: PASS
 - `pnpm test:e2e:web:docker:stack`: PASS
 - `pnpm test:e2e:mobile:android:audit`: PASS (3 consecutive full-audit green runs on 2026-02-26)
-- `pnpm test:e2e:mobile:ios`: PENDING (not yet re-run in this checkpoint window)
+- `pnpm test:e2e:mobile:ios`: PASS (3 consecutive suite green runs on 2026-02-28)
 
-Phase 05 remains `IN_PROGRESS` until iOS checkpoint is either green or explicitly deferred by release scope decision.
+Phase 05 release gates are complete for this checkpoint window.
 
 ## Android Appium Hardening Checkpoint (2026-02-21)
 
@@ -108,7 +108,10 @@ Phase 05 remains `IN_PROGRESS` until iOS checkpoint is either green or explicitl
 - Android requirement is now satisfied:
   - full Android audit executed with a running emulator and built APK
   - stability requirement met with 3 consecutive green runs.
-- iOS release-checkpoint execution remains required on a host with simulator/Xcode prerequisites.
+- iOS requirement is now satisfied:
+  - host includes Xcode + simulator prerequisites
+  - preflight validates API, Metro status, and Metro bundle endpoint before WDIO
+  - stability requirement met with 3 consecutive green runs.
 
 ## Release Checklist Step 2 - Post-Deploy Smoke (2026-02-25)
 
@@ -334,13 +337,31 @@ Checkpoint stability result:
 Command:
 - `pnpm test:e2e:mobile:ios`
 
-Status:
-- Not yet re-run in this checkpoint window.
-- Current blocker remains environment/prerequisite provisioning on iOS runner host (simulator/app bundle tooling).
+Result (run 1 - 2026-02-28):
+- suite completed
+- `Spec Files: 3 passed, 3 total (100% completed)`
+- Status: PASS
+
+Result (run 2 - 2026-02-28):
+- suite completed
+- `Spec Files: 3 passed, 3 total (100% completed)` in `00:02:39`
+- Status: PASS
+
+Result (run 3 - 2026-02-28):
+- suite completed
+- `Spec Files: 3 passed, 3 total (100% completed)` in `00:02:55`
+- Status: PASS
+
+Coverage confirmed in each run:
+- `tests/auth.spec.ts`: passing
+- `tests/dashboard.spec.ts`: passing
+- `tests/gestures.spec.ts`: passing
+
+Checkpoint stability result:
+- iOS mobile release checkpoint is GREEN with 3 consecutive successful suite runs.
 
 ### Mobile Checkpoint Verdict
 - Android: PASS (stable, 3x consecutive)
-- iOS: PENDING (environment/rerun outstanding)
-- Phase 05 remains `IN_PROGRESS` until iOS release checkpoint is either:
-  1. executed and green, or
-  2. explicitly deferred by release scope decision.
+- iOS: PASS (stable, 3x consecutive)
+- Mobile release checkpoint: PASS
+- Phase 05 status: COMPLETE
