@@ -433,3 +433,24 @@ Workflow dispatch runs:
 - queue reason:
   - `android` job waiting for runner labels: `self-hosted`, `Linux`, `mobile`
   - `ios` job waiting for runner labels: `self-hosted`, `macOS`, `mobile`
+
+## SCA High Vulnerability Remediation (2026-02-28)
+
+Action:
+- Added `pnpm.overrides` to root `package.json` to force patched versions of dependencies with high/critical vulnerabilities.
+- Impacted packages: `basic-ftp`, `fast-xml-parser`, `minimatch`, `glob`, `serialize-javascript`, `tar`, `lodash`, `semver`, `axios`.
+
+Verification:
+- `pnpm install` (sync lockfile)
+- `pnpm audit` (re-check vulnerability status)
+
+Result:
+- **High/Critical Vulnerabilities: 0**
+- Moderate: 5
+- Low: 6
+- Status: PASS (high severity gate satisfied)
+
+Evidence:
+- Previously reported high vulnerabilities in `minimatch` (ReDoS) and `fast-xml-parser` (DoS/Stack Overflow) are now resolved.
+- Critical path traversal in `basic-ftp` is resolved.
+- RCE in `serialize-javascript` is resolved.

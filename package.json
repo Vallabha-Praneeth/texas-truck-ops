@@ -12,13 +12,17 @@
     "build": "pnpm --recursive run build",
     "lint": "pnpm --recursive run lint",
     "typecheck": "pnpm --recursive run typecheck",
-    "test": "pnpm --recursive run test",
+    "test": "pnpm --recursive --filter=!@led-billboard/e2e-mobile run test",
+    "test:all": "pnpm --recursive run test",
     "test:e2e:web": "playwright test",
-    "test:e2e:web:docker": "PLAYWRIGHT_BASE_URL=http://localhost:4000 API_URL=http://localhost:4001/api INTERNAL_SERVICE_KEY=docker-internal-service-key TEST_PHONE=+15551234567 playwright test --config=playwright.docker.config.ts",
-    "test:e2e:web:docker:realtime": "PLAYWRIGHT_BASE_URL=http://localhost:4000 API_URL=http://localhost:4001/api INTERNAL_SERVICE_KEY=docker-internal-service-key TEST_PHONE=+15551234567 playwright test tests/e2e-web/tests/realtime-refresh.spec.ts --config=playwright.docker.config.ts --project=chromium --workers=1",
+    "test:e2e:web:docker": "PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL:-http://localhost:8001} API_URL=${API_URL:-http://localhost:8002/api} INTERNAL_SERVICE_KEY=docker-internal-service-key TEST_PHONE=+15551234567 playwright test --config=playwright.docker.config.ts",
+    "test:e2e:web:docker:stack": "bash ./scripts/test-e2e-web-docker.sh",
+    "test:e2e:web:docker:realtime": "PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL:-http://localhost:8001} API_URL=${API_URL:-http://localhost:8002/api} INTERNAL_SERVICE_KEY=docker-internal-service-key TEST_PHONE=+15551234567 playwright test tests/e2e-web/tests/realtime-refresh.spec.ts --config=playwright.docker.config.ts --project=chromium --workers=1",
     "test:e2e:mobile": "cd tests/e2e-mobile && pnpm test",
     "test:e2e:mobile:ios": "cd tests/e2e-mobile && pnpm test:ios",
     "test:e2e:mobile:android": "cd tests/e2e-mobile && pnpm test:android",
+    "test:e2e:mobile:android:audit": "bash ./tests/e2e-mobile/scripts/full-android-audit.sh",
+    "smoke:staging:driver-checkpoint": "node packages/api/scripts/staging_driver_checkpoint.mjs",
     "test:e2e:all": "pnpm test:e2e:web && pnpm test:e2e:mobile",
     "clean": "pnpm --recursive run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
@@ -36,5 +40,20 @@
     "prettier": "^3.2.4",
     "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@8.15.1"
+  "packageManager": "pnpm@8.15.1",
+  "pnpm": {
+    "overrides": {
+      "react": "18.2.0",
+      "react-dom": "18.2.0",
+      "basic-ftp": ">=5.2.0",
+      "fast-xml-parser": ">=5.3.8",
+      "minimatch": ">=10.2.3",
+      "glob": ">=10.5.0",
+      "serialize-javascript": ">=7.0.3",
+      "tar": ">=7.5.4",
+      "lodash": ">=4.17.23",
+      "semver": ">=7.5.2",
+      "axios": ">=1.13.5"
+    }
+  }
 }

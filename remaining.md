@@ -35,6 +35,8 @@ Owner: Engineering
 - Phase 04: COMPLETE (reports available under `reports/phase-04/`).
 - Phase 05: COMPLETE (web/API gates green; Android + iOS mobile release checkpoints green).
   - Previous iOS waiver is resolved by Metro/bundle preflight hardening plus successful iOS checkpoint execution on 2026-02-28.
+  - **Security**: SCA high-severity vulnerabilities resolved via `pnpm.overrides` on 2026-02-28.
+  - **CI Note**: Future checkpoints on `main` branch require self-hosted runners to be online.
 
 ## Global Definition of Done (applies to every active phase)
 1. Scope implementation for that phase is complete.
