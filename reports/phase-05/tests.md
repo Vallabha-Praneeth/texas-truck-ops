@@ -395,4 +395,41 @@ Workflow dispatch runs:
 
 Notes:
 - First ZAP attempt on prior SHA failed due missing `.zap/baseline-rules.tsv`; fixed by committing the rules file, then rerun passed on the release SHA above.
-- `mobile-release-checkpoint.yml` cannot be dispatched yet because GitHub only allows dispatch for workflows present on the default branch.
+
+## Default Branch Gate Attempt (2026-02-28)
+
+Reference branch/SHA:
+- branch: `main`
+- sha: `9144ea55f9b07094870ecd5954421013c6aedb5a`
+
+Workflow dispatch runs:
+1. Security SAST
+- run id: `22516096565`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516096565`
+- conclusion: `success`
+
+2. Security ZAP Baseline
+- run id: `22516096563`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516096563`
+- conclusion: `success`
+
+3. Security Headers & Configuration
+- run id: `22516096572`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516096572`
+- conclusion: `success`
+
+4. Security SCA
+- run id: `22516096607`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516096607`
+- conclusion: `failure`
+- failure detail:
+  - dependency audit gate found high vulnerabilities
+  - trivy gate found HIGH vulnerabilities (notably `minimatch` CVE-2026-27903/CVE-2026-27904)
+
+5. mobile-release-checkpoint
+- run id: `22516096575`
+- url: `https://github.com/Vallabha-Praneeth/texas-truck-ops/actions/runs/22516096575`
+- status: `queued`
+- queue reason:
+  - `android` job waiting for runner labels: `self-hosted`, `Linux`, `mobile`
+  - `ios` job waiting for runner labels: `self-hosted`, `macOS`, `mobile`
