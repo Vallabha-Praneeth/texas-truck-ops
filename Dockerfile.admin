@@ -1,0 +1,57 @@
+# Multi-stage Dockerfile for Next.js Admin
+# Optimized for pnpm workspace monorepo
+
+# Stage 1: Base dependencies
+FROM node:18-alpine AS base
+RUN apk add --no-cache libc6-compat
+RUN corepack enable && corepack prepare pnpm@8.15.1 --activate
+
+# Stage 2: Install dependencies
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/admin/package.json ./apps/admin/
+RUN pnpm install --frozen-lockfile
+
+# Stage 3: Build Next.js app
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY packages/shared ./packages/shared
+COPY apps/admin ./apps/admin
+COPY tsconfig.base.json ./
+
+WORKDIR /app/apps/admin
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001/api
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN pnpm build
+
+# Stage 5: Production runtime
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001/api
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy Next.js standalone build output
+COPY --from=builder /app/apps/admin/.next/standalone ./
+COPY --from=builder /app/apps/admin/.next/static ./.next/static
+# Standalone output from pnpm can include links resolving via /node_modules.
+COPY --from=deps /app/node_modules /node_modules
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
