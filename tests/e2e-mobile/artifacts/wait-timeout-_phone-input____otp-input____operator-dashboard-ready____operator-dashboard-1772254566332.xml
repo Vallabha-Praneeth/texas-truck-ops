@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AppiumAUT>
+  <XCUIElementTypeApplication type="XCUIElementTypeApplication" name="LED Billboard Marketplace" label="LED Billboard Marketplace" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="10618" bundleId="com.ledbillboard.marketplace">
+    <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="-402" y="-874" width="1206" height="2622" index="0" traits=""/>
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="1" traits=""/>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="-402" y="-874" width="1206" height="2622" index="0" traits=""/>
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="812" index="1" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="812" index="0" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="812" index="0" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="812" index="0" traits="">
+                <XCUIElementTypeTable type="XCUIElementTypeTable" enabled="true" visible="true" accessible="false" x="0" y="62" width="402" height="718" index="0" traits="">
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="62" width="402" height="136" index="0" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="No bundle URL present.&#10;&#10;Make sure you're running a packager server or have included a .jsbundle file in your application bundle." name="redbox-error" label="No bundle URL present.&#10;&#10;Make sure you're running a packager server or have included a .jsbundle file in your application bundle." enabled="true" visible="true" accessible="true" x="20" y="62" width="362" height="136" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="198" width="402" height="50" index="1" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="RCTFatal" name="RCTFatal" label="RCTFatal" enabled="true" visible="true" accessible="true" x="20" y="215" width="68" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="248" width="402" height="50" index="2" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="__28-[RCTCxxBridge handleError:]_block_invoke" name="__28-[RCTCxxBridge handleError:]_block_invoke" label="__28-[RCTCxxBridge handleError:]_block_invoke" enabled="true" visible="true" accessible="true" x="20" y="257" width="355" height="33" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="298" width="402" height="50" index="3" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_dispatch_call_block_and_release" name="_dispatch_call_block_and_release" label="_dispatch_call_block_and_release" enabled="true" visible="true" accessible="true" x="20" y="315" width="270" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="348" width="402" height="50" index="4" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_dispatch_client_callout" name="_dispatch_client_callout" label="_dispatch_client_callout" enabled="true" visible="true" accessible="true" x="20" y="365" width="203" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="398" width="402" height="50" index="5" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_dispatch_main_queue_drain.cold.7" name="_dispatch_main_queue_drain.cold.7" label="_dispatch_main_queue_drain.cold.7" enabled="true" visible="true" accessible="true" x="20" y="415" width="279" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="448" width="402" height="50" index="6" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_dispatch_main_queue_drain" name="_dispatch_main_queue_drain" label="_dispatch_main_queue_drain" enabled="true" visible="true" accessible="true" x="20" y="465" width="220" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="498" width="402" height="50" index="7" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_dispatch_main_queue_callback_4CF" name="_dispatch_main_queue_callback_4CF" label="_dispatch_main_queue_callback_4CF" enabled="true" visible="true" accessible="true" x="20" y="515" width="279" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="548" width="402" height="50" index="8" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__" name="__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__" label="__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__" enabled="true" visible="true" accessible="true" x="20" y="557" width="355" height="33" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="598" width="402" height="50" index="9" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="__CFRunLoopRun" name="__CFRunLoopRun" label="__CFRunLoopRun" enabled="true" visible="true" accessible="true" x="19" y="615" width="120" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="648" width="402" height="50" index="10" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="_CFRunLoopRunSpecificWithOptions" name="_CFRunLoopRunSpecificWithOptions" label="_CFRunLoopRunSpecificWithOptions" enabled="true" visible="true" accessible="true" x="20" y="665" width="270" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="698" width="402" height="50" index="11" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="GSEventRunModal" name="GSEventRunModal" label="GSEventRunModal" enabled="true" visible="true" accessible="true" x="20" y="715" width="127" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="true" accessible="true" x="0" y="748" width="402" height="50" index="12" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="-[UIApplication _run]" name="-[UIApplication _run]" label="-[UIApplication _run]" enabled="true" visible="true" accessible="true" x="20" y="765" width="178" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="false" accessible="true" x="0" y="798" width="402" height="50" index="13" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="UIApplicationMain" name="UIApplicationMain" label="UIApplicationMain" enabled="true" visible="false" accessible="true" x="20" y="815" width="144" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="false" accessible="true" x="0" y="848" width="402" height="50" index="14" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="__debug_main_executable_dylib_entry_point" name="__debug_main_executable_dylib_entry_point" label="__debug_main_executable_dylib_entry_point" enabled="true" visible="false" accessible="true" x="0" y="62" width="346" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="false" accessible="true" x="0" y="898" width="402" height="50" index="15" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="start_sim" name="start_sim" label="start_sim" enabled="true" visible="false" accessible="true" x="0" y="62" width="76" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeCell type="XCUIElementTypeCell" enabled="true" visible="false" accessible="true" x="0" y="948" width="402" height="50" index="16" traits="">
+                    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="0x0" name="0x0" label="0x0" enabled="true" visible="false" accessible="true" x="0" y="62" width="26" height="17" index="0" traits="StaticText"/>
+                  </XCUIElementTypeCell>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Vertical scroll bar, 2 pages" label="Vertical scroll bar, 2 pages" enabled="true" visible="false" accessible="false" x="369" y="100" width="30" height="680" index="17" traits="Adjustable">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="396" y="126" width="3" height="491" index="0" traits=""/>
+                  </XCUIElementTypeOther>
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" value="0%" name="Horizontal scroll bar, 1 page" label="Horizontal scroll bar, 1 page" enabled="true" visible="false" accessible="false" x="0" y="747" width="402" height="30" index="18" traits="Adjustable">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="3" y="774" width="393" height="3" index="0" traits=""/>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeTable>
+                <XCUIElementTypeButton type="XCUIElementTypeButton" name="redbox-dismiss" label="Dismiss (ESC)" enabled="true" visible="true" accessible="true" x="0" y="780" width="101" height="60" index="1" traits="Button">
+                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Dismiss (ESC)" name="Dismiss (ESC)" label="Dismiss (ESC)" enabled="true" visible="true" accessible="false" x="26" y="794" width="48" height="32" index="0" traits="StaticText"/>
+                </XCUIElementTypeButton>
+                <XCUIElementTypeButton type="XCUIElementTypeButton" name="redbox-reload" label="Reload (⌘R)" enabled="true" visible="true" accessible="true" x="100" y="780" width="101" height="60" index="2" traits="Button">
+                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Reload (⌘R)" name="Reload (⌘R)" label="Reload (⌘R)" enabled="true" visible="true" accessible="false" x="129" y="794" width="43" height="32" index="0" traits="StaticText"/>
+                </XCUIElementTypeButton>
+                <XCUIElementTypeButton type="XCUIElementTypeButton" name="redbox-copy" label="Copy (⌥⌘C)" enabled="true" visible="true" accessible="true" x="201" y="780" width="101" height="60" index="3" traits="Button">
+                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Copy (⌥⌘C)" name="Copy (⌥⌘C)" label="Copy (⌥⌘C)" enabled="true" visible="true" accessible="false" x="229" y="794" width="45" height="32" index="0" traits="StaticText"/>
+                </XCUIElementTypeButton>
+                <XCUIElementTypeButton type="XCUIElementTypeButton" name="redbox-extra" label="Extra Info (⌘E)" enabled="true" visible="true" accessible="true" x="301" y="780" width="101" height="60" index="4" traits="Button">
+                  <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Extra Info (⌘E)" name="Extra Info (⌘E)" label="Extra Info (⌘E)" enabled="true" visible="true" accessible="false" x="322" y="794" width="59" height="32" index="0" traits="StaticText"/>
+                </XCUIElementTypeButton>
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="843" width="402" height="1" index="5" traits=""/>
+                <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="902" width="402" height="34" index="6" traits=""/>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeWindow>
+  </XCUIElementTypeApplication>
+</AppiumAUT>
