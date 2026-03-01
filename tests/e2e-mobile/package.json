@@ -1,0 +1,30 @@
+{
+  "name": "@led-billboard/e2e-mobile",
+  "version": "1.0.0",
+  "description": "Mobile E2E tests using Appium and WebdriverIO",
+  "private": true,
+  "scripts": {
+    "test": "pnpm test:ios",
+    "test:ios": "node ./scripts/preflight-ios.mjs && wdio run wdio.conf.ts --spec ./tests/**/*.spec.ts --suite ios",
+    "test:android": "node ./scripts/preflight-android.mjs && wdio run wdio.conf.ts --spec ./tests/**/*.spec.ts --suite android",
+    "appium": "appium"
+  },
+  "dependencies": {
+    "@wdio/appium-service": "^9.5.4",
+    "@wdio/cli": "^9.5.4",
+    "@wdio/globals": "^9.5.4",
+    "@wdio/local-runner": "^9.5.4",
+    "@wdio/mocha-framework": "^9.5.4",
+    "@wdio/spec-reporter": "^9.5.4",
+    "@wdio/types": "^9.5.4",
+    "appium": "^3.2.0",
+    "appium-uiautomator2-driver": "^6.8.2",
+    "appium-xcuitest-driver": "^10.23.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.14.3"
+  }
+}

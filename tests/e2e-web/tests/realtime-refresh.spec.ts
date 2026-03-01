@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const API_BASE_URL = process.env.API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.API_URL || 'http://localhost:8002/api';
 const INTERNAL_SERVICE_KEY =
   process.env.INTERNAL_SERVICE_KEY || 'dev-internal-service-key';
 const TEST_PHONE = process.env.TEST_PHONE || '+15551234567';
@@ -141,9 +141,18 @@ test.describe('Operator Dashboard Realtime Refresh', () => {
     await expect.poll(() => slotsRequestCount, { timeout: 15000 }).toBeGreaterThan(0);
     await expect.poll(() => offersRequestCount, { timeout: 15000 }).toBeGreaterThan(0);
     await expect(pendingOffersValue).toHaveText('0', { timeout: 15000 });
-    await expect(page.getByText('Connected with JWT')).toBeVisible({
+    const realtimeConnectionStatus = page.getByTestId(
+      'realtime-connection-status'
+    );
+    await expect(realtimeConnectionStatus).toBeVisible({
       timeout: 15000,
     });
+    await expect(realtimeConnectionStatus).toContainText('stream ready', {
+      timeout: 15000,
+    });
+    await expect(
+      page.getByText('Latest event: realtime:connected')
+    ).toBeVisible({ timeout: 15000 });
 
     const emitResponse = await request.post(
       `${API_BASE_URL}/realtime/internal/emit`,
