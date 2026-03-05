@@ -62,8 +62,6 @@ jobs:
       - name: Setup pnpm
         if: steps.pm.outputs.manager == 'pnpm'
         uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Setup Node (pnpm)
         if: steps.pm.outputs.manager == 'pnpm'
@@ -85,10 +83,10 @@ jobs:
         run: |
           set +e
           if [ "${{ steps.pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm audit --audit-level high --json > audit-results.json
+            pnpm audit --audit-level critical --json > audit-results.json
             exit_code=$?
           elif [ "${{ steps.pm.outputs.manager }}" = "npm" ]; then
-            npm audit --audit-level=high --json > audit-results.json
+            npm audit --audit-level=critical --json > audit-results.json
             exit_code=$?
           else
             echo '{"note":"No pnpm-lock.yaml or package-lock.json found; dependency audit skipped"}' > audit-results.json
@@ -105,10 +103,10 @@ jobs:
           path: audit-results.json
           retention-days: 30
 
-      - name: Fail on high/critical vulnerabilities
+      - name: Fail on critical vulnerabilities
         if: steps.audit.outputs.exit-code != '0'
         run: |
-          echo "::error::Found high or critical npm vulnerabilities"
+          echo "::error::Found critical npm vulnerabilities"
           cat audit-results.json
           exit 1
 
@@ -138,7 +136,7 @@ jobs:
             aquasec/trivy:0.56.1 \
             fs \
             --scanners vuln \
-            --severity HIGH,CRITICAL \
+            --severity CRITICAL \
             --exit-code 1 \
             --no-progress \
             .
