@@ -1,0 +1,72 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-ios-fast-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios_fast_regression:
+    name: ios-fast-regression
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Detect iOS-relevant changes
+        id: changes
+        shell: bash
+        run: |
+          # Compare PR head to base branch for PRs, else compare last commit on push
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            DIFF=$(git diff --name-only "$BASE" "$HEAD" || true)
+          else
+            DIFF=$(git diff --name-only HEAD~1 HEAD || true)
+          fi
+
+          echo "DIFF<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Fast no-op if nothing iOS-related changed
+        id: gate
+        shell: bash
+        run: |
+          DIFF="${{ steps.changes.outputs.DIFF }}"
+          echo "$DIFF" | sed -e 's/^/changed: /'
+
+          # Tune these paths to what you consider “iOS-affecting”
+          if echo "$DIFF" | grep -E -q '^(apps/mobile/|apps/mobile/ios/|packages/|pnpm-lock\.yaml|\.github/workflows/)'; then
+            echo "run_ios=true" >> $GITHUB_OUTPUT
+            echo "iOS-relevant changes detected -> run lane"
+          else
+            echo "run_ios=false" >> $GITHUB_OUTPUT
+            echo "No iOS-relevant changes -> report success without running iOS lane"
+          fi
+
+      - name: Run iOS FastRegression lane
+        if: ${{ steps.gate.outputs.run_ios == 'true' }}
+        run: pnpm ios:test:fast

@@ -22,6 +22,7 @@
     "test:e2e:mobile:ios": "cd tests/e2e-mobile && pnpm test:ios",
     "test:e2e:mobile:android": "cd tests/e2e-mobile && pnpm test:android",
     "test:e2e:mobile:android:audit": "bash ./tests/e2e-mobile/scripts/full-android-audit.sh",
+    "ios:test:fast": "bash ./tests/e2e-mobile/scripts/run-ios-fast-regression.sh",
     "smoke:staging:driver-checkpoint": "node packages/api/scripts/staging_driver_checkpoint.mjs",
     "test:e2e:all": "pnpm test:e2e:web && pnpm test:e2e:mobile",
     "clean": "pnpm --recursive run clean && rm -rf node_modules",
