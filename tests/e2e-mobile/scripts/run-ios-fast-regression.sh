@@ -1,55 +1,63 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
-WORKSPACE_PATH="${IOS_WORKSPACE_PATH:-apps/mobile/ios/LEDBillboardMarketplace.xcworkspace}"
-SCHEME="${IOS_SCHEME:-LEDBillboardMarketplace}"
-TEST_PLAN="${IOS_TEST_PLAN:-FastRegression}"
-DERIVED_DATA_PATH="${IOS_DERIVED_DATA_PATH:-/tmp/ios-fast-regression-derived-data}"
+ROOT="$(git rev-parse --show-toplevel)"
+IOS_DIR="$ROOT/apps/mobile/ios"
 
-if [[ ! -d "$WORKSPACE_PATH" ]]; then
-  echo "[ios:test:fast] Missing iOS workspace: $WORKSPACE_PATH"
-  echo "[ios:test:fast] Expected workspace path for FastRegression lane."
+APP_NAME="LEDBillboardMarketplace"
+WORKSPACE="$IOS_DIR/${APP_NAME}.xcworkspace"
+XCODEPROJ="$IOS_DIR/${APP_NAME}.xcodeproj"
+
+# Test plan file name (without extension) + configuration name
+TEST_PLAN_NAME="${APP_NAME}"          # e.g. LEDBillboardMarketplace.xctestplan
+TEST_CONFIG_NAME="FastRegression"     # config inside the plan
+
+if [[ ! -d "$IOS_DIR" ]]; then
+  echo "[ios:test:fast] Missing iOS dir: apps/mobile/ios"
   exit 1
 fi
 
-if ! command -v xcrun >/dev/null 2>&1; then
-  echo "[ios:test:fast] xcrun is required but not found."
+# If workspace is missing but Podfile exists, generate it
+if [[ ! -d "$WORKSPACE" ]]; then
+  if [[ -f "$IOS_DIR/Podfile" ]]; then
+    echo "[ios:test:fast] Workspace missing; running pod install to generate .xcworkspace"
+    pushd "$IOS_DIR" >/dev/null
+    # Prefer bundler if present
+    if [[ -f "Gemfile" ]]; then
+      bundle install
+      bundle exec pod install
+    else
+      pod install
+    fi
+    popd >/dev/null
+  fi
+fi
+
+# Fallback: if workspace still missing but xcodeproj exists, use xcodeproj
+XCODE_ARGS=()
+if [[ -d "$WORKSPACE" ]]; then
+  XCODE_ARGS=(-workspace "$WORKSPACE")
+elif [[ -d "$XCODEPROJ" ]]; then
+  echo "[ios:test:fast] Workspace still missing; falling back to xcodeproj"
+  XCODE_ARGS=(-project "$XCODEPROJ")
+else
+  echo "[ios:test:fast] Missing both workspace and xcodeproj for $APP_NAME in apps/mobile/ios"
   exit 1
 fi
 
-DESTINATION="${IOS_DESTINATION:-}"
-if [[ -z "$DESTINATION" ]]; then
-  SIM_NAME="$(
-    xcrun simctl list devices available \
-      | awk -F'[()]' '/iPhone 16 Pro|iPhone 15 Pro|iPhone 15|iPhone 14/ { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1); print $1; exit }'
-  )"
+# Destination: use latest available iPhone simulator on runner
+DESTINATION="${IOS_DESTINATION:-platform=iOS Simulator,name=iPhone 15,OS=latest}"
 
-  if [[ -z "$SIM_NAME" ]]; then
-    SIM_NAME="$(
-      xcrun simctl list devices available \
-        | awk -F'[()]' '/iPhone/ { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1); print $1; exit }'
-    )"
-  fi
-
-  if [[ -z "$SIM_NAME" ]]; then
-    echo "[ios:test:fast] No available iPhone simulator found."
-    exit 1
-  fi
-
-  DESTINATION="platform=iOS Simulator,name=${SIM_NAME},OS=latest"
-fi
-
-echo "[ios:test:fast] workspace: $WORKSPACE_PATH"
-echo "[ios:test:fast] scheme: $SCHEME"
-echo "[ios:test:fast] test plan: $TEST_PLAN"
-echo "[ios:test:fast] destination: $DESTINATION"
+echo "[ios:test:fast] Running xcodebuild with:"
+echo "  scheme: $APP_NAME"
+echo "  test plan: $TEST_PLAN_NAME"
+echo "  config: $TEST_CONFIG_NAME"
+echo "  destination: $DESTINATION"
 
 xcodebuild \
-  -workspace "$WORKSPACE_PATH" \
-  -scheme "$SCHEME" \
-  -configuration Debug \
-  -testPlan "$TEST_PLAN" \
+  "${XCODE_ARGS[@]}" \
+  -scheme "$APP_NAME" \
+  -testPlan "$TEST_PLAN_NAME" \
+  -only-test-configuration "$TEST_CONFIG_NAME" \
   -destination "$DESTINATION" \
-  -derivedDataPath "$DERIVED_DATA_PATH" \
   test
