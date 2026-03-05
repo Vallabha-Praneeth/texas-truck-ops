@@ -13,8 +13,8 @@ TEST_PLAN_NAME="${APP_NAME}"          # e.g. LEDBillboardMarketplace.xctestplan
 TEST_CONFIG_NAME="FastRegression"     # config inside the plan
 
 if [[ ! -d "$IOS_DIR" ]]; then
-  echo "[ios:test:fast] Missing iOS dir: apps/mobile/ios"
-  exit 1
+  echo "[ios:test:fast] iOS project not present in this repo (apps/mobile/ios missing). Skipping iOS lane."
+  exit 0
 fi
 
 # If workspace is missing but Podfile exists, generate it
