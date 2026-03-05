@@ -14,7 +14,7 @@ concurrency:
 jobs:
   ios_fast_regression:
     name: ios-fast-regression
-    runs-on: self-hosted  # change to macos-14 if you use GitHub-hosted runners
+    runs-on: macos-14
     timeout-minutes: 60
 
     steps:
