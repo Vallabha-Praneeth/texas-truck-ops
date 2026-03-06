@@ -13,7 +13,7 @@ TEST_PLAN_NAME="${APP_NAME}"          # e.g. LEDBillboardMarketplace.xctestplan
 TEST_CONFIG_NAME="FastRegression"     # config inside the plan
 
 if [[ ! -d "$IOS_DIR" ]]; then
-  echo "[ios:test:fast] iOS project not present in this repo (apps/mobile/ios missing). Skipping iOS lane."
+  echo "[ios:test:fast] SKIP: no iOS project in this repo (expected apps/mobile/ios)"
   exit 0
 fi
 
