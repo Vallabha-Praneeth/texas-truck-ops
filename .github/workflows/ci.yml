@@ -68,7 +68,9 @@ jobs:
   ios-fast-regression:
     needs: quality
     # Requires a self-hosted macOS runner with:
-    #   - Xcode installed, simulator booted ("iPhone 16")
+    #   - Xcode installed with an "iPhone 16" simulator available
+    #     (simulator does NOT need to be pre-booted; run-fastregression.sh
+    #      calls `xcrun simctl boot` before xcodebuild)
     #   - API environment (DATABASE_URL, LOCAL_TEST_PASSWORD_ENABLED=true, etc.)
     #     available — testPasswordLoginHappyPath calls POST /auth/login-password.
     runs-on: [self-hosted, macOS, mobile]
