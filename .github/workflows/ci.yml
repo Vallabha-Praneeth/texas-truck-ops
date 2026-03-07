@@ -99,6 +99,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check App Store baseline (deployment target + armv7 removal)
+        # Verifies ios.deploymentTarget in Podfile.properties.json, all
+        # IPHONEOS_DEPLOYMENT_TARGET entries in project.pbxproj, and that
+        # UIRequiredDeviceCapabilities contains no armv7 (32-bit, deprecated iOS 11+).
+        run: bash scripts/ios/check-appstore-baseline.sh
+
       - name: Check Info.plist permission usage strings
         # Fails fast if NSLocationWhenInUseUsageDescription or NSCameraUsageDescription
         # are missing, avoiding an App Store rejection or runtime crash from the
