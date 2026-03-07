@@ -108,6 +108,21 @@ log "xcbuild log:  $XCODEBUILD_LOG"
 mkdir -p "$DERIVED_DATA"
 : > "$XCODEBUILD_LOG"
 
+# ── Step 0b: Simulator boot ────────────────────────────────────────────────────
+# Extracts the simulator name from DESTINATION, e.g.:
+#   "platform=iOS Simulator,name=iPhone 16" → "iPhone 16"
+# `xcrun simctl boot` is idempotent: it exits 149 ("already booted") when the
+# simulator is already up, which we suppress.  This guarantees the simulator
+# is in Running state before xcodebuild test starts, avoiding the "Unable to
+# boot device in current state: Creating" error that CI runners hit when a
+# prior job left the simulator in a transient state.
+#
+# [D1] xcrun simctl boot — boots a simulator by name or UDID.
+#   Idempotency: exit 149 = "simulator already booted".  Always safe to call.
+SIM_NAME="${DESTINATION##*name=}"
+log "Ensuring simulator '$SIM_NAME' is booted..."
+xcrun simctl boot "$SIM_NAME" 2>/dev/null || true   # exit 149 when already booted; OK
+
 # ── Step 1: API ────────────────────────────────────────────────────────────────
 # testPasswordLoginHappyPath calls POST /auth/login-password which resolves to a
 # deterministic local session via LOCAL_TEST_PASSWORD_* env vars [D4]. No Supabase
@@ -129,6 +144,19 @@ step "3/3" "xcodebuild test -only-test-configuration $CONFIGURATION"
 
 # Use set +e / PIPESTATUS so xcodebuild failure does NOT short-circuit the script
 # before we can print the diagnostic summary.
+# Export Metro coordinates so the XCTest host process (which inherits this
+# shell's environment) can read them via ProcessInfo.processInfo.environment.
+# makeApp() in LEDBillboardMarketplaceUITests.swift forwards them into
+# XCUIApplication.launchEnvironment so AppDelegate.mm sets jsLocation
+# directly, bypassing the Expo dev-client interactive bundle picker.
+#
+# [D2] xcodebuild spawns the XCTest host as a child process and child
+#   processes inherit the parent's environment on POSIX systems.
+# [D3] XCUIApplication.launchEnvironment injects env vars into the app-
+#   under-test process (a separate process from the XCTest host).
+export RCT_METRO_HOST="127.0.0.1"
+export RCT_METRO_PORT="8082"
+
 set +e
 xcodebuild test \
   -workspace               "$WORKSPACE" \
