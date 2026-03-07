@@ -99,6 +99,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check Info.plist permission usage strings
+        # Fails fast if NSLocationWhenInUseUsageDescription or NSCameraUsageDescription
+        # are missing, avoiding an App Store rejection or runtime crash from the
+        # missing-key NSInvalidArgumentException (iOS 10+).
+        run: bash scripts/ios/check-info-plist-permissions.sh
+
       - name: Run iOS FastRegression
         # scripts/ios/run-fastregression.sh starts Metro + API, runs xcodebuild,
         # prints first assertion failures on non-zero exit, and propagates the

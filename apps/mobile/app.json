@@ -14,7 +14,11 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ledbillboard.marketplace"
+      "bundleIdentifier": "com.ledbillboard.marketplace",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LED Billboard Marketplace uses your location while the app is open to show driver position to dispatch operators and record proof-of-display arrival at billboard sites.",
+        "NSCameraUsageDescription": "LED Billboard Marketplace uses the camera to photograph billboard displays as proof-of-service evidence for booking verifications."
+      }
     },
     "android": {
       "adaptiveIcon": {
