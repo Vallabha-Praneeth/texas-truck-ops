@@ -13,6 +13,11 @@ import { useAuth } from '@/auth';
 import { KPICard, SlotCard, SlotData } from '@/components';
 import { useBookings, useOffers, useSlots, useMemberships } from '@/hooks';
 import { formatCurrencyFromCents, toFiniteNumber } from '@/lib/format';
+import {
+  UI_TEST_FAKE_AUTH,
+  UI_TEST_FORCE_DASHBOARD_ERROR,
+  UI_TEST_FORCE_DASHBOARD_ERROR_ONCE,
+} from '@/lib/launchArgs';
 import { theme } from '@/lib/theme';
 import loadingAnimation from '@/assets/lottie/icons/loading.json';
 
@@ -31,37 +36,68 @@ const formatTime = (iso: string) =>
 export const OperatorDashboard = () => {
   const { session, logout } = useAuth();
 
+  // In UI-test fake-auth mode the API server will return 401 for the fake
+  // token, which triggers the unauthorized handler and immediately clears the
+  // session.  Disable all data-fetching queries so no real HTTP calls are made.
+  const isUITest = UI_TEST_FAKE_AUTH === 'YES';
+
   const {
     data: slots,
     isLoading: isSlotsLoading,
     isFetching: isSlotsFetching,
     error: slotsError,
     refetch: refetchSlots,
-  } = useSlots();
+  } = useSlots(undefined, { enabled: !isUITest });
 
   const {
     data: offers,
     isFetching: isOffersFetching,
     error: offersError,
     refetch: refetchOffers,
-  } = useOffers();
+  } = useOffers(undefined, { enabled: !isUITest });
 
   const {
     data: bookings,
     isFetching: isBookingsFetching,
     error: bookingsError,
     refetch: refetchBookings,
-  } = useBookings();
+  } = useBookings({ enabled: !isUITest });
 
-  const { data: membershipsResponse } = useMemberships();
+  const { data: membershipsResponse } = useMemberships({ enabled: !isUITest });
 
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Tracks whether the user has tapped the Retry button so we can show
+  // `operator-dashboard-retry-requested` while the refetch is in-flight.
+  const [retryRequested, setRetryRequested] = React.useState(false);
+
+  // For FORCE_DASHBOARD_ERROR_ONCE: once the user retries, the forced error
+  // is consumed and the next render shows the recovered state.
+  const [forcedErrorConsumed, setForcedErrorConsumed] = React.useState(false);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     await Promise.all([refetchSlots(), refetchOffers(), refetchBookings()]);
     setRefreshing(false);
   }, [refetchSlots, refetchOffers, refetchBookings]);
+
+  const handleRetry = React.useCallback(async () => {
+    if (UI_TEST_FORCE_DASHBOARD_ERROR_ONCE === 'YES' && !forcedErrorConsumed) {
+      setForcedErrorConsumed(true);
+    }
+    setRetryRequested(true);
+    await Promise.all([refetchSlots(), refetchOffers(), refetchBookings()]);
+    // When the error is permanently forced by a launch arg, keep the
+    // retry-requested indicator visible so XCTest can detect it reliably.
+    // XCTest's .tap() blocks for several seconds waiting for UI to stabilise;
+    // clearing retryRequested immediately after the refetch causes the
+    // indicator to disappear before waitForExistence even starts.  In normal
+    // (non-forced-error) operation the indicator is always cleared so it
+    // doesn't linger on screen.
+    if (UI_TEST_FORCE_DASHBOARD_ERROR !== 'YES') {
+      setRetryRequested(false);
+    }
+  }, [refetchSlots, refetchOffers, refetchBookings, forcedErrorConsumed]);
 
   const activeSlots = React.useMemo(
     () => (slots ?? []).filter((slot) => !slot.isBooked).length,
@@ -119,9 +155,18 @@ export const OperatorDashboard = () => {
       }));
   }, [slots]);
 
-  const hasError = Boolean(slotsError || offersError || bookingsError);
+  // `shouldForceError` is true when a launch arg demands error state, letting
+  // LocalAuthE2E tests exercise the error UI without needing the API to fail.
+  const shouldForceError =
+    UI_TEST_FORCE_DASHBOARD_ERROR === 'YES' ||
+    (UI_TEST_FORCE_DASHBOARD_ERROR_ONCE === 'YES' && !forcedErrorConsumed);
 
-  if (isSlotsLoading && !slots) {
+  const hasError = shouldForceError || Boolean(slotsError || offersError || bookingsError);
+
+  // In UI-test fake-auth mode the API server is unavailable, so queries will
+  // sit in a loading/paused state. Skip the loading gate so the dashboard
+  // renders immediately and the test can find operator-dashboard.
+  if (isSlotsLoading && !slots && UI_TEST_FAKE_AUTH !== 'YES') {
     return (
       <SafeAreaView
         testID="operator-dashboard-loading"
@@ -178,9 +223,30 @@ export const OperatorDashboard = () => {
         </View>
 
         {hasError ? (
-          <View testID="error-message" style={styles.errorCard}>
+          <View
+            testID="operator-dashboard-error"
+            accessibilityLabel="operator-dashboard-error"
+            style={styles.errorCard}
+          >
             <Text style={styles.errorTitle}>Some dashboard data failed to load.</Text>
-            <Text style={styles.errorSubtitle}>Pull down to retry.</Text>
+            {retryRequested ? (
+              <View
+                testID="operator-dashboard-retry-requested"
+                accessibilityLabel="operator-dashboard-retry-requested"
+              >
+                <Text style={styles.errorSubtitle}>Retrying…</Text>
+              </View>
+            ) : (
+              <Text style={styles.errorSubtitle}>Tap Retry or pull down to refresh.</Text>
+            )}
+            <TouchableOpacity
+              testID="operator-dashboard-retry-button"
+              accessibilityLabel="operator-dashboard-retry-button"
+              style={styles.retryButton}
+              onPress={() => void handleRetry()}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : null}
 
@@ -338,6 +404,20 @@ const styles = StyleSheet.create({
   errorSubtitle: {
     color: '#b91c1c',
     fontSize: theme.fontSize.xs,
+  },
+  retryButton: {
+    marginTop: theme.spacing.xs,
+    alignSelf: 'flex-start',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: '#b91c1c',
+  },
+  retryButtonText: {
+    color: '#b91c1c',
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.medium,
   },
   emptyState: {
     borderWidth: 1,

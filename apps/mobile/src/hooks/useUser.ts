@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { UserMembershipsResponse } from '@/types/api';
 
 export const userKeys = {
   me: ['users', 'me'] as const,
@@ -14,10 +15,13 @@ export function useMe() {
   });
 }
 
-export function useMemberships() {
+export function useMemberships(
+  options?: Omit<UseQueryOptions<UserMembershipsResponse>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: userKeys.memberships,
     queryFn: () => api.users.getMemberships(),
     staleTime: 60000,
+    ...options,
   });
 }

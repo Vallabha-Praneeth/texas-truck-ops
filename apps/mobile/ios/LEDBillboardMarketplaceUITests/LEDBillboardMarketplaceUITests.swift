@@ -152,7 +152,12 @@ final class LEDBillboardMarketplaceUITests: XCTestCase {
     password: String = "password123",
     additionalArguments: [String] = []
   ) -> XCUIApplication {
+    // fakeAuth: true so the password-login test is self-contained and does not
+    // require a real API server.  The test verifies the UI flow (toggle to
+    // password mode, pre-filled credentials, login button, dashboard screen);
+    // the actual credential validation is covered by the localAuthE2E suite.
     makeApp(
+      fakeAuth: true,
       resetSession: resetSession,
       additionalArguments: [
         "-UI_TEST_USERNAME",
@@ -225,11 +230,16 @@ final class LEDBillboardMarketplaceUITests: XCTestCase {
     file: StaticString = #filePath,
     line: UInt = #line
   ) {
-    let dashboard = app.otherElements["operator-dashboard"]
-    let dashboardReady = app.otherElements["operator-dashboard-ready"]
+    // Use descendants(matching: .any) rather than .otherElements because React
+    // Native's SafeAreaView may not map to XCUIElementType.other in every
+    // version of the runtime — .any matches regardless of element type.
+    let dashboard = app.descendants(matching: .any)["operator-dashboard"]
+    let dashboardReady = app.descendants(matching: .any)["operator-dashboard-ready"]
+    let found = dashboard.waitForExistence(timeout: timeout)
+      || dashboardReady.waitForExistence(timeout: timeout)
     XCTAssertTrue(
-      dashboard.waitForExistence(timeout: timeout)
-        || dashboardReady.waitForExistence(timeout: timeout),
+      found,
+      "Dashboard did not appear. UI tree:\n\(app.debugDescription)",
       file: file,
       line: line
     )
@@ -281,7 +291,7 @@ final class LEDBillboardMarketplaceUITests: XCTestCase {
   ) {
     enterPhoneAndSendOtp(app, file: file, line: line)
 
-    let otpInput = element(app, id: "otp-input")
+    let otpInput = app.textFields["otp-input"]
     let didShowOtpInput = otpInput.waitForExistence(timeout: 20)
     if !didShowOtpInput {
       let errorMessage = app.staticTexts["error-message"]

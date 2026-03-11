@@ -102,10 +102,11 @@ export class AuthService implements OnModuleDestroy {
         } catch (error) {
             const isDevContext = process.env.NODE_ENV === 'development';
             const fallbackAllowed = process.env.ALLOW_OTP_FALLBACK === 'true';
+            const isTestMode = process.env.NODE_ENV === 'test' || process.env.TEST_MODE === 'true';
 
-            if (isDevContext && fallbackAllowed) {
-                // Fallback to in-memory storage if explicitly allowed in dev
-                console.warn('⚠️ Redis unavailable. Falling back to in-memory OTP storage (Local Dev Only)');
+            if ((isDevContext && fallbackAllowed) || isTestMode) {
+                // Fallback to in-memory storage in dev (when allowed) or test mode
+                console.warn('⚠️ Redis unavailable. Falling back to in-memory OTP storage');
                 this.inMemoryOtpStore.set(key, {
                     otp,
                     expiresAt: Date.now() + this.OTP_EXPIRY_SECONDS * 1000,
