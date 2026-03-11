@@ -1,0 +1,73 @@
+{
+  "configurations" : [
+    {
+      "id" : "3F482458-BD85-4A5B-BDF9-C851B0C4023F",
+      "name" : "FastRegression",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "isEnabled" : true,
+            "key" : "XCODE_TEST_LANE",
+            "value" : "FastRegression"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_HOST",
+            "value" : "127.0.0.1"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_PORT",
+            "value" : "8082"
+          }
+        ]
+      }
+    },
+    {
+      "id" : "58DFA451-FD9B-4D6B-AEB6-C0D6736A3D00",
+      "name" : "LocalAuthE2E",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "isEnabled" : true,
+            "key" : "XCODE_TEST_LANE",
+            "value" : "LocalAuthE2E"
+          }
+        ]
+      }
+    },
+    {
+      "id" : "E910C5E8-9970-4D5C-9B1F-BA5DC29E4012",
+      "name" : "Accessibility",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "isEnabled" : true,
+            "key" : "XCODE_TEST_LANE",
+            "value" : "Accessibility"
+          }
+        ]
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:LEDBillboardMarketplace.xcodeproj",
+        "identifier" : "F10000000000000000000010",
+        "name" : "LEDBillboardMarketplaceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LEDBillboardMarketplace.xcodeproj",
+        "identifier" : "F10000000000000000000011",
+        "name" : "LEDBillboardMarketplaceUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

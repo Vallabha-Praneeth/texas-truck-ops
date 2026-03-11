@@ -4,14 +4,30 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    const httpAdapter = app.getHttpAdapter().getInstance();
+
+    if (typeof httpAdapter.disable === 'function') {
+        httpAdapter.disable('x-powered-by');
+    }
+
+    app.use((_req, res, next) => {
+        res.setHeader(
+            'Strict-Transport-Security',
+            'max-age=31536000; includeSubDomains'
+        );
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('X-Frame-Options', 'DENY');
+        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        next();
+    });
 
     const allowedOrigins = (
         process.env.CORS_ORIGINS
             ? process.env.CORS_ORIGINS.split(',').map((value) => value.trim())
             : [
                   'http://localhost:19006', // Expo web
-                  'http://localhost:3000', // Admin Next.js (local)
-                  'http://localhost:4000', // Admin Next.js (Docker)
+                  'http://localhost:8001', // Admin Next.js (local + Docker)
+                  'http://localhost:4000', // Legacy admin port (deprecated)
                   'exp://localhost:19000', // Expo mobile
               ]
     ).filter(Boolean);

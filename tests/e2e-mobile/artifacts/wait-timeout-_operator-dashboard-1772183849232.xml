@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AppiumAUT>
+  <XCUIElementTypeApplication type="XCUIElementTypeApplication" name="LED Billboard Marketplace" label="LED Billboard Marketplace" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="" processId="61035" bundleId="com.ledbillboard.marketplace">
+    <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+            <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+              <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                            <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                              <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                                <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="operator-dashboard-loading Overview Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                            <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview" label="operator-dashboard-loading Overview" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                              <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading Overview" label="operator-dashboard-loading Overview" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="795" index="0" traits="">
+                                                <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview" label="Overview" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="101" index="0" traits="">
+                                                  <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="101" index="0" traits="">
+                                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="101" index="0" traits=""/>
+                                                  </XCUIElementTypeOther>
+                                                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview" label="Overview" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="101" index="1" traits="">
+                                                    <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="0" width="402" height="57" index="0" traits=""/>
+                                                    <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview" label="Overview" enabled="true" visible="true" accessible="false" x="0" y="57" width="402" height="44" index="1" traits="">
+                                                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="57" width="148" height="44" index="0" traits=""/>
+                                                      <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview" label="Overview" enabled="true" visible="true" accessible="false" x="163" y="57" width="76" height="44" index="1" traits="">
+                                                        <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview" label="Overview" enabled="true" visible="true" accessible="true" x="163" y="68" width="77" height="22" index="0" traits="Header"/>
+                                                      </XCUIElementTypeOther>
+                                                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="254" y="57" width="148" height="44" index="2" traits=""/>
+                                                    </XCUIElementTypeOther>
+                                                  </XCUIElementTypeOther>
+                                                </XCUIElementTypeOther>
+                                                <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading" label="operator-dashboard-loading" enabled="true" visible="true" accessible="false" x="0" y="101" width="402" height="694" index="1" traits="">
+                                                  <XCUIElementTypeOther type="XCUIElementTypeOther" name="operator-dashboard-loading" label="operator-dashboard-loading" enabled="true" visible="true" accessible="false" x="0" y="101" width="402" height="694" index="0" traits="">
+                                                    <XCUIElementTypeOther type="XCUIElementTypeOther" name="In progress Loading operator dashboard..." label="In progress Loading operator dashboard..." enabled="true" visible="true" accessible="false" x="0" y="101" width="402" height="694" index="0" traits="">
+                                                      <XCUIElementTypeOther type="XCUIElementTypeOther" name="In progress" label="In progress" enabled="true" visible="true" accessible="false" x="183" y="416" width="36" height="37" index="0" traits="">
+                                                        <XCUIElementTypeActivityIndicator type="XCUIElementTypeActivityIndicator" value="1" name="In progress" label="In progress" enabled="true" visible="true" accessible="true" x="183" y="416" width="36" height="37" index="0" traits=""/>
+                                                      </XCUIElementTypeOther>
+                                                      <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" value="Loading operator dashboard..." name="Loading operator dashboard..." label="Loading operator dashboard..." enabled="true" visible="true" accessible="true" x="91" y="460" width="220" height="20" index="1" traits="StaticText"/>
+                                                    </XCUIElementTypeOther>
+                                                  </XCUIElementTypeOther>
+                                                </XCUIElementTypeOther>
+                                              </XCUIElementTypeOther>
+                                            </XCUIElementTypeOther>
+                                          </XCUIElementTypeOther>
+                                        </XCUIElementTypeOther>
+                                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="795" index="1" traits="">
+                                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="795" index="0" traits=""/>
+                                        </XCUIElementTypeOther>
+                                      </XCUIElementTypeOther>
+                                    </XCUIElementTypeOther>
+                                    <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="795" width="402" height="79" index="1" traits="">
+                                      <XCUIElementTypeOther type="XCUIElementTypeOther" name="Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" label="Overview, tab, 1 of 4 Slots, tab, 2 of 4 Offers, tab, 3 of 4 Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="false" x="0" y="795" width="402" height="50" index="0" traits="">
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" value="1" name="Overview, tab, 1 of 4" label="Overview, tab, 1 of 4" enabled="true" visible="true" accessible="true" x="0" y="795" width="101" height="50" index="0" traits="Selected, Button"/>
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" name="Slots, tab, 2 of 4" label="Slots, tab, 2 of 4" enabled="true" visible="true" accessible="true" x="100" y="795" width="101" height="50" index="1" traits="Button"/>
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" name="Offers, tab, 3 of 4" label="Offers, tab, 3 of 4" enabled="true" visible="true" accessible="true" x="201" y="795" width="101" height="50" index="2" traits="Button"/>
+                                        <XCUIElementTypeButton type="XCUIElementTypeButton" name="Bookings, tab, 4 of 4" label="Bookings, tab, 4 of 4" enabled="true" visible="true" accessible="true" x="301" y="795" width="101" height="50" index="3" traits="Button"/>
+                                      </XCUIElementTypeOther>
+                                      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="true" accessible="false" x="0" y="795" width="402" height="80" index="1" traits=""/>
+                                    </XCUIElementTypeOther>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+                          <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits=""/>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeWindow>
+    <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="1" traits="">
+      <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits="">
+        <XCUIElementTypeOther type="XCUIElementTypeOther" enabled="true" visible="false" accessible="false" x="0" y="0" width="402" height="874" index="0" traits=""/>
+      </XCUIElementTypeOther>
+    </XCUIElementTypeWindow>
+  </XCUIElementTypeApplication>
+</AppiumAUT>
