@@ -24,6 +24,16 @@
 - (NSURL *)getBundleURL
 {
 #if DEBUG
+  // When the app bundle contains an embedded main.jsbundle (e.g. built with
+  // FORCE_BUNDLING=1 for self-contained UI-test runs) use it directly so the
+  // app never tries to reach a Metro server that isn't running.
+  // Normal dev builds skip bundling, so URLForResource returns nil and we fall
+  // through to the Metro path unchanged.
+  NSURL *embeddedBundle = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  if (embeddedBundle) {
+    return embeddedBundle;
+  }
+
   NSString *metroHost = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_HOST"];
   NSString *metroPort = [[[NSProcessInfo processInfo] environment] objectForKey:@"RCT_METRO_PORT"];
   if (metroHost.length > 0 || metroPort.length > 0) {

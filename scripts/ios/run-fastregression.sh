@@ -57,7 +57,7 @@ WORKSPACE="${IOS_WORKSPACE:-$ROOT_DIR/apps/mobile/ios/LEDBillboardMarketplace.xc
 SCHEME="${IOS_SCHEME:-LEDBillboardMarketplace}"
 TEST_PLAN="${IOS_TEST_PLAN:-LEDBillboardMarketplace}"
 CONFIGURATION="FastRegression"
-DESTINATION="${IOS_DESTINATION:-platform=iOS Simulator,name=iPhone 16 Pro}"
+DESTINATION="${IOS_DESTINATION:-platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0}"
 DERIVED_DATA="${IOS_DERIVED_DATA:-$ROOT_DIR/apps/mobile/ios/build/DerivedData/$CONFIGURATION}"
 XCODEBUILD_LOG="${XCODEBUILD_LOG:-/tmp/xcodebuild-fastregression.log}"
 

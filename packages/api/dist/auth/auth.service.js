@@ -74,8 +74,9 @@ let AuthService = class AuthService {
         catch (error) {
             const isDevContext = process.env.NODE_ENV === 'development';
             const fallbackAllowed = process.env.ALLOW_OTP_FALLBACK === 'true';
-            if (isDevContext && fallbackAllowed) {
-                console.warn('⚠️ Redis unavailable. Falling back to in-memory OTP storage (Local Dev Only)');
+            const isTestMode = process.env.NODE_ENV === 'test' || process.env.TEST_MODE === 'true';
+            if ((isDevContext && fallbackAllowed) || isTestMode) {
+                console.warn('⚠️ Redis unavailable. Falling back to in-memory OTP storage');
                 this.inMemoryOtpStore.set(key, {
                     otp,
                     expiresAt: Date.now() + this.OTP_EXPIRY_SECONDS * 1000,

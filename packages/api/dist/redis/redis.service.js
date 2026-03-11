@@ -30,6 +30,15 @@ let RedisService = class RedisService {
             throw new Error('REDIS_URL is not configured');
         }
         this.client = new ioredis_1.default(redisUrl);
+        this.client.on('error', (err) => {
+            console.error('🚨 Redis connection error:', err);
+        });
+        this.client.on('connect', () => {
+            console.log('✅ Connected to Redis');
+        });
+        this.client.on('ready', () => {
+            console.log('✅ Redis is ready');
+        });
     }
     async set(key, value, ttlSeconds) {
         if (!this.client) {

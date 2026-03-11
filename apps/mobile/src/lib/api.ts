@@ -24,6 +24,14 @@ export const USER_KEY = '@led_billboard_user';
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8081/api';
 
+// Use a shorter timeout outside production so UI tests and local dev don't
+// wait the full 15 s for a slow/unreachable backend before queries resolve to
+// an error state.  10 s is generous enough to accommodate cold-start NestJS
+// processes (which can take 3-5 s on the first authenticated request) while
+// still failing quickly when the backend is truly unreachable on localhost.
+const API_TIMEOUT =
+  process.env.EXPO_PUBLIC_ENV === 'production' ? 15000 : 10000;
+
 export interface DriverLocationPayload {
   latitude: number;
   longitude: number;
@@ -124,7 +132,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 15000,
+      timeout: API_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -242,6 +250,11 @@ export const api = {
       apiClient.post<AuthSessionResponse>('/auth/verify-otp', {
         phone,
         code,
+      }),
+    loginWithPassword: (username: string, password: string) =>
+      apiClient.post<AuthSessionResponse>('/auth/password-login', {
+        username,
+        password,
       }),
     getProfile: () => apiClient.get<UserProfile>('/auth/profile'),
   },
