@@ -1,0 +1,11 @@
+
+> @led-billboard/mobile@0.1.0 start:test /Users/anitavallabha/B2B/apps/mobile
+> expo start --dev-client --port 8082 --clear
+
+Starting project at /Users/anitavallabha/B2B/apps/mobile
+env: load .env
+env: export EXPO_PUBLIC_API_URL EXPO_PUBLIC_ENV
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8082
+Logs for your project will appear below.
