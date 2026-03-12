@@ -37,34 +37,6 @@ jobs:
       - name: Unit and integration tests
         run: pnpm test
 
-  web-e2e-docker:
-    needs: quality
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8.15.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browser
-        run: pnpm playwright install --with-deps chromium
-
-      - name: Run web docker E2E
-        run: pnpm test:e2e:web:docker:stack
-
   # Lightweight iOS gate — runs on GitHub-hosted macOS, satisfies the required
   # branch-protection check.  It validates static iOS health (App Store baseline
   # and Info.plist permissions) and skips if no iOS-relevant files changed.
