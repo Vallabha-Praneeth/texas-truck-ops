@@ -119,6 +119,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install CocoaPods dependencies
+        run: cd apps/mobile/ios && /opt/homebrew/bin/pod install --deployment
+
       - name: Run iOS FastRegression (xcodebuild)
         run: pnpm ios:test:fast:regression
 
