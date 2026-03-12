@@ -90,6 +90,8 @@ jobs:
         run: bash scripts/ios/check-info-plist-permissions.sh
 
   # Full XCTest simulator suite — runs on the local self-hosted macOS runner.
+  # Uses pre-installed node/pnpm/pod from the machine; no setup-node or
+  # setup-pnpm actions to avoid PATH conflicts with Expo's autolinking.
   # Optional (not required by branch protection).
   ios-xctest-suite:
     needs: ios-fast-regression
@@ -101,26 +103,16 @@ jobs:
     env:
       IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.0
       XCODEBUILD_LOG: /tmp/xcodebuild-fastregression.log
+      PATH: /Users/anitavallabha/.nvm/versions/node/v20.19.6/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8.15.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Install CocoaPods dependencies
-        run: cd apps/mobile/ios && /opt/homebrew/bin/pod install --deployment
+        run: cd apps/mobile/ios && pod install --deployment
 
       - name: Run iOS FastRegression (xcodebuild)
         run: pnpm ios:test:fast:regression
