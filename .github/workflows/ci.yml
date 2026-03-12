@@ -99,7 +99,7 @@ jobs:
       group: ios-simulator-lanes
       cancel-in-progress: false
     env:
-      IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16
+      IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.0
       XCODEBUILD_LOG: /tmp/xcodebuild-fastregression.log
     steps:
       - name: Checkout
