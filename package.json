@@ -30,6 +30,7 @@
     "ios:test:fast:regression": "bash ./scripts/ios/run-fastregression.sh",
     "ios:test:local-auth:ci": "bash ./scripts/ios/run-xctest-config.sh LocalAuthE2E",
     "ios:test:a11y:ci": "bash ./scripts/ios/run-xctest-config.sh Accessibility",
+    "web:e2e:admin:ci": "pnpm --filter @led-billboard/admin run test:e2e:ci",
     "ios:test:e2e-local-auth": "bash ./scripts/ios-test-lane.sh local-auth",
     "ios:test:a11y": "bash ./scripts/ios-test-lane.sh a11y",
     "ios:test:state-recovery": "bash ./scripts/ios-test-lane.sh state-recovery",
