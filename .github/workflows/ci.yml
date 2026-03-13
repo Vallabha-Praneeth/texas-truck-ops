@@ -6,6 +6,14 @@ on:
     branches:
       - main
 
+# Opt all actions into Node.js 24 now rather than waiting for the forced
+# migration on 2026-06-02.  Eliminates "Node.js 20 actions are deprecated"
+# warnings from actions/checkout, actions/setup-node, pnpm/action-setup,
+# and actions/upload-artifact.
+# See: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -93,16 +101,24 @@ jobs:
   # Uses pre-installed node/pnpm/pod from the machine; no setup-node or
   # setup-pnpm actions to avoid PATH conflicts with Expo's autolinking.
   # Optional (not required by branch protection).
+  #
+  # Runs all three xctestplan configurations in sequence within a single job
+  # so they share the same pod install, Metro process, and simulator state:
+  #   1. FastRegression  (5 tests)  — auth entry, phone input, OTP, password login
+  #   2. LocalAuthE2E   (10 tests)  — deeper auth flows with real OTP bypass
+  #   3. Accessibility   (3 tests)  — VoiceOver / XCUIElement accessibility audits
   ios-xctest-suite:
     needs: ios-fast-regression
     runs-on: [self-hosted, macOS, mobile]
-    timeout-minutes: 45
+    timeout-minutes: 60
     concurrency:
       group: ios-simulator-lanes
       cancel-in-progress: false
     env:
       IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.0
-      XCODEBUILD_LOG: /tmp/xcodebuild-fastregression.log
+      # Metro coordinates — baked here so all three runner scripts inherit them.
+      RCT_METRO_HOST: "127.0.0.1"
+      RCT_METRO_PORT: "8082"
       PATH: /Users/anitavallabha/.nvm/versions/node/v20.19.6/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     steps:
       - name: Checkout
@@ -114,22 +130,56 @@ jobs:
       - name: Install CocoaPods dependencies
         run: cd apps/mobile/ios && pod install --deployment
 
+      # ── FastRegression ─────────────────────────────────────────────────────
       - name: Run iOS FastRegression (xcodebuild)
+        env:
+          XCODEBUILD_LOG: /tmp/xcodebuild-fastregression.log
         run: pnpm ios:test:fast:regression
 
-      - name: Upload xcodebuild log
+      - name: Upload FastRegression xcodebuild log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fastregression-xcodebuild-log
+          name: xctest-fastregression-log
           path: /tmp/xcodebuild-fastregression.log
           retention-days: 7
 
+      # ── LocalAuthE2E ───────────────────────────────────────────────────────
+      # Metro is force-restarted by run-xctest-config.sh; the bundle is already
+      # in Metro's transform cache from FastRegression so warm-up is near-instant.
+      - name: Run iOS LocalAuthE2E (xcodebuild)
+        env:
+          XCODEBUILD_LOG: /tmp/xcodebuild-local-auth-e2e.log
+        run: pnpm ios:test:local-auth:ci
+
+      - name: Upload LocalAuthE2E xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xctest-local-auth-e2e-log
+          path: /tmp/xcodebuild-local-auth-e2e.log
+          retention-days: 7
+
+      # ── Accessibility ──────────────────────────────────────────────────────
+      - name: Run iOS Accessibility (xcodebuild)
+        env:
+          XCODEBUILD_LOG: /tmp/xcodebuild-accessibility.log
+        run: pnpm ios:test:a11y:ci
+
+      - name: Upload Accessibility xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xctest-accessibility-log
+          path: /tmp/xcodebuild-accessibility.log
+          retention-days: 7
+
+      # ── Service logs (failure only) ────────────────────────────────────────
       - name: Upload service logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: fastregression-service-logs
+          name: xctest-service-logs
           path: |
             apps/mobile/.metro-8082.log
             apps/mobile/.api-8081.log
