@@ -32,6 +32,16 @@
             "isEnabled" : true,
             "key" : "XCODE_TEST_LANE",
             "value" : "LocalAuthE2E"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_HOST",
+            "value" : "127.0.0.1"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_PORT",
+            "value" : "8082"
           }
         ]
       }
@@ -45,6 +55,16 @@
             "isEnabled" : true,
             "key" : "XCODE_TEST_LANE",
             "value" : "Accessibility"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_HOST",
+            "value" : "127.0.0.1"
+          },
+          {
+            "isEnabled" : true,
+            "key" : "RCT_METRO_PORT",
+            "value" : "8082"
           }
         ]
       }

@@ -28,6 +28,8 @@
     "ios:dev": "bash ./scripts/ios/ensure-metro-8082.sh && bash ./scripts/ios/launch-dev-client.sh",
     "ios:test:fast": "bash ./scripts/ios/ensure-metro-8082.sh && bash ./scripts/ios-test-lane.sh fast",
     "ios:test:fast:regression": "bash ./scripts/ios/run-fastregression.sh",
+    "ios:test:local-auth:ci": "bash ./scripts/ios/run-xctest-config.sh LocalAuthE2E",
+    "ios:test:a11y:ci": "bash ./scripts/ios/run-xctest-config.sh Accessibility",
     "ios:test:e2e-local-auth": "bash ./scripts/ios-test-lane.sh local-auth",
     "ios:test:a11y": "bash ./scripts/ios-test-lane.sh a11y",
     "ios:test:state-recovery": "bash ./scripts/ios-test-lane.sh state-recovery",
