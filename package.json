@@ -59,6 +59,8 @@
       "minimatch": ">=10.2.3",
       "glob": ">=10.5.0",
       "babel-plugin-module-resolver>glob": "^9",
+      "@react-native-community/cli-platform-ios>glob": "^7",
+      "@react-native-community/cli-platform-android>glob": "^7",
       "serialize-javascript": ">=7.0.3",
       "tar": ">=7.5.4",
       "lodash": ">=4.17.23",
