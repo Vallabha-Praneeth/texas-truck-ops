@@ -190,8 +190,7 @@ jobs:
   # Validates two independent things:
   #   1. expo export: the React Native JS bundle builds cleanly for Android
   #   2. assembleDebug: Kotlin/Java + native linking succeed and produce an APK
-  # The Appium E2E suite (tests/e2e-mobile/) requires a live emulator + API +
-  # Metro and is intended for local/self-hosted runs via test:e2e:mobile:android.
+  # The full Appium E2E suite is in android-e2e (self-hosted, informational).
   android-build:
     name: Android build (debug APK)
     needs: quality
@@ -271,6 +270,155 @@ jobs:
           name: android-debug-apk
           path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
+
+  # ── Android Appium E2E ────────────────────────────────────────────────────
+  # Full WebdriverIO/Appium suite — runs on the local self-hosted macOS runner.
+  # Requires a live Android emulator, running API server, and Metro bundler.
+  # Downloads the debug APK produced by android-build instead of rebuilding it.
+  # Optional (not required by branch protection), mirrors ios-xctest-suite pattern.
+  #
+  # Environment the runner must have pre-configured:
+  #   - Android SDK at ~/Library/Android/sdk with platform-tools + emulator
+  #   - AVD named Pixel_8 (override via AVD_NAME env if different)
+  #   - Appium 3.x installed globally (npm i -g appium) or via pnpm
+  android-e2e:
+    name: Android E2E (Appium/WebdriverIO)
+    needs: android-build
+    runs-on: [self-hosted, macOS, mobile]
+    timeout-minutes: 30
+    concurrency:
+      group: android-emulator-lane
+      cancel-in-progress: false
+    env:
+      ANDROID_HOME: /Users/anitavallabha/Library/Android/sdk
+      ANDROID_SDK_ROOT: /Users/anitavallabha/Library/Android/sdk
+      AVD_NAME: Pixel_8
+      MOBILE_API_HEALTH_URL: http://localhost:8081/api/health
+      MOBILE_METRO_PORT: "8082"
+      EXPO_NO_TELEMETRY: "1"
+      PATH: /Users/anitavallabha/.nvm/versions/node/v20.19.6/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-debug-apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/
+
+      # ── Emulator ───────────────────────────────────────────────────────────
+      - name: Ensure Android emulator is running
+        shell: bash
+        run: |
+          ADB="$ANDROID_HOME/platform-tools/adb"
+          EMULATOR="$ANDROID_HOME/emulator/emulator"
+
+          if "$ADB" devices | grep -E -q '[[:space:]]device$'; then
+            echo "Android device/emulator already connected"
+          else
+            if ! "$EMULATOR" -list-avds | grep -qx "$AVD_NAME"; then
+              echo "AVD '$AVD_NAME' not found. Available AVDs:"
+              "$EMULATOR" -list-avds || true
+              exit 1
+            fi
+            echo "Starting emulator: $AVD_NAME"
+            nohup "$EMULATOR" -avd "$AVD_NAME" \
+              -netdelay none -netspeed full -no-window -no-boot-anim \
+              > /tmp/b2b-android-emulator.log 2>&1 &
+            echo "EMULATOR_PID=$!" >> "$GITHUB_ENV"
+
+            echo "Waiting for emulator boot (up to 180 s)…"
+            "$ADB" wait-for-device
+            elapsed=0
+            until [ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
+              sleep 2; elapsed=$((elapsed + 2))
+              [ $elapsed -ge 180 ] && echo "Emulator boot timed out" && exit 1
+            done
+            echo "Emulator booted"
+            "$ADB" devices
+          fi
+
+      # ── API server ─────────────────────────────────────────────────────────
+      - name: Ensure API server is running
+        shell: bash
+        run: |
+          if curl -fsS "$MOBILE_API_HEALTH_URL" >/dev/null 2>&1; then
+            echo "API already running at $MOBILE_API_HEALTH_URL"
+          else
+            echo "Starting API server (log: apps/mobile/.api-8081.log)"
+            PORT=8081 ./start-api.sh > apps/mobile/.api-8081.log 2>&1 &
+            echo "API_PID=$!" >> "$GITHUB_ENV"
+
+            elapsed=0
+            until curl -fsS "$MOBILE_API_HEALTH_URL" >/dev/null 2>&1; do
+              sleep 2; elapsed=$((elapsed + 2))
+              [ $elapsed -ge 60 ] && echo "API health check timed out" && exit 1
+            done
+            echo "API ready"
+          fi
+
+      # ── Metro bundler ──────────────────────────────────────────────────────
+      - name: Start Metro bundler (force-fresh)
+        shell: bash
+        run: |
+          # Always restart Metro so the bundle reflects the current checkout.
+          # Mirrors the force-restart pattern used in ios-xctest-suite.
+          lsof -tiTCP:"$MOBILE_METRO_PORT" -sTCP:LISTEN 2>/dev/null | xargs kill 2>/dev/null || true
+          sleep 1
+
+          cd apps/mobile
+          EXPO_NO_TELEMETRY=1 pnpm exec expo start \
+            --dev-client --port "$MOBILE_METRO_PORT" --clear \
+            > ".metro-${MOBILE_METRO_PORT}.log" 2>&1 &
+          echo "METRO_PID=$!" >> "$GITHUB_ENV"
+
+          elapsed=0
+          until curl -fsS "http://localhost:${MOBILE_METRO_PORT}/status" >/dev/null 2>&1; do
+            sleep 2; elapsed=$((elapsed + 2))
+            [ $elapsed -ge 90 ] && echo "Metro startup timed out" && exit 1
+          done
+          echo "Metro ready at port $MOBILE_METRO_PORT"
+
+      # ── Tests ──────────────────────────────────────────────────────────────
+      - name: Run Android E2E (Appium/WebdriverIO)
+        run: pnpm test:e2e:mobile:android
+
+      # ── Artifacts ─────────────────────────────────────────────────────────
+      - name: Upload WebdriverIO + Appium logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e-wdio-logs
+          path: |
+            tests/e2e-mobile/wdio-appium.log
+            tests/e2e-mobile/artifacts/
+            tests/e2e-mobile/screenshots/
+          retention-days: 7
+
+      - name: Upload service logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e-service-logs
+          path: |
+            apps/mobile/.metro-8082.log
+            apps/mobile/.api-8081.log
+            /tmp/b2b-android-emulator.log
+          retention-days: 7
+
+      # ── Cleanup ────────────────────────────────────────────────────────────
+      - name: Stop background services
+        if: always()
+        shell: bash
+        run: |
+          [ -n "${METRO_PID:-}" ] && kill "$METRO_PID" 2>/dev/null || true
+          [ -n "${API_PID:-}"   ] && kill "$API_PID"   2>/dev/null || true
+          # Leave the emulator running for the next job (warm start benefit);
+          # the concurrency group ensures only one job uses it at a time.
 
   # ── Web E2E ──────────────────────────────────────────────────────────────
   web-e2e:
