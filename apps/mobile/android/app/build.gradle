@@ -104,15 +104,23 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            // Keystore is decoded from ANDROID_KEYSTORE_BASE64 in CI and written to
+            // ANDROID_KEYSTORE_PATH.  For local release builds set these four env vars
+            // (or put them in ~/.gradle/gradle.properties, never in the repo).
+            def keystorePath = System.getenv("ANDROID_KEYSTORE_PATH") ?: ""
+            storeFile keystorePath ? file(keystorePath) : null
+            storePassword System.getenv("ANDROID_STORE_PASSWORD") ?: ""
+            keyAlias    System.getenv("ANDROID_KEY_ALIAS")    ?: ""
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: ""
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
