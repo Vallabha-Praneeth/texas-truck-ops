@@ -33,7 +33,10 @@ test.describe('Broker dashboard', () => {
     await page.goto('/broker');
 
     await expect(page.getByTestId('broker-dashboard')).toBeVisible();
+    // Default tab: My Requests
     await expect(page.getByTestId('request-empty-state')).toBeVisible();
+    // Switch to My Sent Offers tab to assert its empty state
+    await page.getByRole('tab', { name: 'My Sent Offers' }).click();
     await expect(page.getByTestId('offers-empty-state')).toBeVisible();
   });
 });
