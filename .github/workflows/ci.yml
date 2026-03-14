@@ -184,3 +184,50 @@ jobs:
             apps/mobile/.metro-8082.log
             apps/mobile/.api-8081.log
           retention-days: 7
+
+  # ── Web E2E ──────────────────────────────────────────────────────────────
+  web-e2e:
+    name: Web E2E (admin)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/admin
+    env:
+      # Dev JWT secret — required for /api/v1/dev/mint-token used in auth helper
+      JWT_SECRET: dev-secret-key-change-in-production
+      DEV_ONLY: "true"
+      # All NestJS API calls are mocked in tests; URL only needs to be consistent
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Web E2E tests
+        run: pnpm test:e2e:ci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-admin
+          path: apps/admin/playwright-report/
+          retention-days: 7
