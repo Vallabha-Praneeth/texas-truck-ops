@@ -1,5 +1,14 @@
 rootProject.name = 'LED Billboard Marketplace'
 
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+  }
+  includeBuild(new File(["node", "--print", "require.resolve('expo-modules-core/package.json')"].execute(null, rootDir).text.trim()).getParentFile().toString() + "/android")
+}
+
 dependencyResolutionManagement {
   versionCatalogs {
     reactAndroidLibs {
