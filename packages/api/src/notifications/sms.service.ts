@@ -138,20 +138,26 @@ export class SmsService {
 
             // Handle specific Twilio errors
             let errorMessage = 'Failed to send SMS';
-            if (error && typeof error === 'object' && 'code' in error) {
-                const twilioError = error as { code: number; message: string };
-                switch (twilioError.code) {
-                    case 21211:
-                        errorMessage = 'Invalid phone number';
-                        break;
-                    case 21608:
-                        errorMessage = 'Phone number is not verified (test mode)';
-                        break;
-                    case 21614:
-                        errorMessage = 'Invalid "To" phone number';
-                        break;
-                    default:
-                        errorMessage = twilioError.message || errorMessage;
+            if (error && typeof error === 'object') {
+                // Check if it's a Twilio error with a code
+                if ('code' in error) {
+                    const twilioError = error as { code: number; message: string };
+                    switch (twilioError.code) {
+                        case 21211:
+                            errorMessage = 'Invalid phone number';
+                            break;
+                        case 21608:
+                            errorMessage = 'Phone number is not verified (test mode)';
+                            break;
+                        case 21614:
+                            errorMessage = 'Invalid "To" phone number';
+                            break;
+                        default:
+                            errorMessage = twilioError.message || errorMessage;
+                    }
+                } else if ('message' in error && typeof error.message === 'string') {
+                    // Generic error with message property
+                    errorMessage = error.message;
                 }
             }
 
