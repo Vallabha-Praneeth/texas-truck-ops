@@ -26,6 +26,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace dependencies
+        run: |
+          cd packages/db
+          pnpm build
+          cd ../shared
+          pnpm build
+
       - name: TypeScript - Backend API
         run: |
           cd packages/api
@@ -138,6 +145,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build workspace dependencies
+        run: |
+          cd packages/db
+          pnpm build
+          cd ../shared
+          pnpm build
 
       - name: Build Backend API
         run: |
