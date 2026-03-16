@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Camera, CameraView } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useBookings, useUploadProof } from '@/hooks';
@@ -205,7 +205,7 @@ export const DriverProofCaptureScreen = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.cameraContainer}>
-          <CameraView style={styles.camera} ref={cameraRef} facing="back">
+          <Camera style={styles.camera} ref={cameraRef} type={CameraType.back}>
             <View style={styles.cameraOverlay}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -220,7 +220,7 @@ export const DriverProofCaptureScreen = () => {
                 <View style={styles.captureButtonInner} />
               </TouchableOpacity>
             </View>
-          </CameraView>
+          </Camera>
         </View>
       </SafeAreaView>
     );
