@@ -27,9 +27,28 @@ export enum OfferStatus {
 
 export enum TransactionType {
     DEPOSIT = 'deposit',
-    PAYOUT = 'payout',
+    WITHDRAWAL = 'withdrawal',
     REFUND = 'refund',
-    FEE = 'fee',
+    PAYOUT = 'payout',
+    PLATFORM_FEE = 'platform_fee',
+}
+
+export enum TransactionStatus {
+    PENDING = 'pending',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+}
+
+export enum PaymentMethod {
+    STRIPE = 'stripe',
+    CARD = 'card',
+    BANK_TRANSFER = 'bank_transfer',
+}
+
+export enum ProofStatus {
+    PENDING_REVIEW = 'pending_review',
+    APPROVED = 'approved',
+    REJECTED = 'rejected',
 }
 
 export interface User {
@@ -159,25 +178,33 @@ export interface Thread {
 export interface ProofUpload {
     id: string;
     bookingId: string;
-    uploadedBy: string;
-    type: 'photo' | 'video' | 'gps_log';
-    url: string;
-    latitude?: number;
-    longitude?: number;
+    driverUserId: string;
+    imageUrl: string;
+    latitude?: number | null;
+    longitude?: number | null;
     capturedAt: Date;
+    uploadedAt: Date;
+    notes?: string | null;
+    status: ProofStatus;
+    reviewedBy?: string | null;
+    reviewedAt?: Date | null;
+    rejectionReason?: string | null;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface WalletTransaction {
     id: string;
-    organizationId: string;
-    bookingId?: string;
+    userId: string;
+    bookingId?: string | null;
+    amount: string; // Using string for numeric precision
     type: TransactionType;
-    amount: number;
-    balance: number;
-    description: string;
-    metadata?: Record<string, unknown>;
+    status: TransactionStatus;
+    paymentMethod?: string | null;
+    externalTransactionId?: string | null;
+    metadata?: Record<string, unknown> | null;
     createdAt: Date;
+    completedAt?: Date | null;
 }
 
 export interface AuditLog {

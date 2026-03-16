@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build artifacts
+*.tsbuildinfo
+*.map
+
+# Process IDs
+*.pid
+
+# Claude workspace
+.claude/
+
+# Environment files with secrets
+.env
+.env.local
+.env.production
+.env.*.local

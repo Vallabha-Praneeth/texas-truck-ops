@@ -1,7 +1,8 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  RefreshControl,
+  Alert,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,31 +11,36 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  useBookings,
-  useUpdateBookingStatus,
-  useUpdateDriverLocation,
-} from '@/hooks';
+import { Camera, CameraView } from 'expo-camera';
+import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
+import { useBookings, useUploadProof } from '@/hooks';
 import { theme } from '@/lib/theme';
 
 export const DriverProofCaptureScreen = () => {
   const {
     data: bookings,
     isLoading,
-    isFetching,
     refetch,
   } = useBookings({ refetchInterval: 8000 });
 
-  const updateBookingStatus = useUpdateBookingStatus();
-  const updateDriverLocation = useUpdateDriverLocation();
+  const uploadProof = useUploadProof();
 
   const [selectedBookingId, setSelectedBookingId] = React.useState('');
-  const [proofNote, setProofNote] = React.useState('Proof captured and submitted from mobile.');
-  const [latitude, setLatitude] = React.useState('30.2672');
-  const [longitude, setLongitude] = React.useState('-97.7431');
+  const [proofNote, setProofNote] = React.useState('');
+  const [capturedImage, setCapturedImage] = React.useState<string | null>(null);
+  const [capturedLocation, setCapturedLocation] = React.useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [capturedAt, setCapturedAt] = React.useState<Date | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
-  const [refreshing, setRefreshing] = React.useState(false);
+
+  const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
+  const [hasLocationPermission, setHasLocationPermission] = React.useState<boolean | null>(null);
+  const [showCamera, setShowCamera] = React.useState(false);
+  const cameraRef = React.useRef<any>(null);
 
   const runningBookings = React.useMemo(
     () => (bookings ?? []).filter((booking) => booking.status === 'running'),
@@ -47,13 +53,104 @@ export const DriverProofCaptureScreen = () => {
     }
   }, [selectedBookingId, runningBookings]);
 
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
+  React.useEffect(() => {
+    (async () => {
+      const cameraStatus = await Camera.requestCameraPermissionsAsync();
+      setHasCameraPermission(cameraStatus.status === 'granted');
 
-  const handleSubmitProof = async () => {
+      const locationStatus = await Location.requestForegroundPermissionsAsync();
+      setHasLocationPermission(locationStatus.status === 'granted');
+    })();
+  }, []);
+
+  const handleTakePicture = async () => {
+    if (!hasCameraPermission) {
+      const cameraStatus = await Camera.requestCameraPermissionsAsync();
+      setHasCameraPermission(cameraStatus.status === 'granted');
+      if (cameraStatus.status !== 'granted') {
+        Alert.alert('Permission Required', 'Camera permission is required to capture proof.');
+        return;
+      }
+    }
+
+    if (!hasLocationPermission) {
+      const locationStatus = await Location.requestForegroundPermissionsAsync();
+      setHasLocationPermission(locationStatus.status === 'granted');
+      if (locationStatus.status !== 'granted') {
+        Alert.alert('Permission Required', 'Location permission is required to capture GPS coordinates.');
+        return;
+      }
+    }
+
+    setShowCamera(true);
+  };
+
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+
+    try {
+      setActionError(null);
+
+      // Get current location
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      // Take picture
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        base64: false,
+      });
+
+      setCapturedImage(photo.uri);
+      setCapturedLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      setCapturedAt(new Date());
+      setShowCamera(false);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Failed to capture image');
+      setShowCamera(false);
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        // Get current location
+        if (!hasLocationPermission) {
+          const locationStatus = await Location.requestForegroundPermissionsAsync();
+          setHasLocationPermission(locationStatus.status === 'granted');
+          if (locationStatus.status !== 'granted') {
+            Alert.alert('Permission Required', 'Location permission is required to capture GPS coordinates.');
+            return;
+          }
+        }
+
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        setCapturedImage(result.assets[0].uri);
+        setCapturedLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+        setCapturedAt(new Date());
+      }
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Failed to pick image');
+    }
+  };
+
+  const handleUploadProof = async () => {
     setActionError(null);
     setSuccessMessage(null);
 
@@ -62,37 +159,33 @@ export const DriverProofCaptureScreen = () => {
       return;
     }
 
-    const parsedLatitude = Number(latitude);
-    const parsedLongitude = Number(longitude);
-
-    if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
-      setActionError('Latitude and longitude must be valid numbers.');
+    if (!capturedImage || !capturedLocation || !capturedAt) {
+      setActionError('Please capture an image first.');
       return;
     }
 
     try {
-      await updateDriverLocation.mutateAsync({
+      await uploadProof.mutateAsync({
         bookingId: selectedBookingId,
-        latitude: parsedLatitude,
-        longitude: parsedLongitude,
-        isOnline: true,
-      });
-
-      await updateBookingStatus.mutateAsync({
-        id: selectedBookingId,
-        status: 'awaiting_review',
+        imageUri: capturedImage,
+        latitude: capturedLocation.latitude,
+        longitude: capturedLocation.longitude,
+        capturedAt,
+        notes: proofNote.trim() || undefined,
       });
 
       setSuccessMessage(
-        `Proof submitted for booking ${selectedBookingId.slice(0, 8)}. Status moved to awaiting_review.`
+        'Proof uploaded successfully! Booking moved to awaiting_review.'
       );
-      setProofNote('Proof captured and submitted from mobile.');
-      await refetch();
-    } catch (proofError) {
+
+      // Clear captured data
+      setCapturedImage(null);
+      setCapturedLocation(null);
+      setCapturedAt(null);
+      setProofNote('');
+    } catch (error) {
       setActionError(
-        proofError instanceof Error
-          ? proofError.message
-          : 'Failed to submit proof flow.'
+        error instanceof Error ? error.message : 'Failed to upload proof'
       );
     }
   };
@@ -102,7 +195,32 @@ export const DriverProofCaptureScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Loading proof workflow...</Text>
+          <Text style={styles.loadingText}>Loading bookings...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (showCamera) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.cameraContainer}>
+          <CameraView style={styles.camera} ref={cameraRef} facing="back">
+            <View style={styles.cameraOverlay}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowCamera(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCapture}
+              >
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
         </View>
       </SafeAreaView>
     );
@@ -110,22 +228,16 @@ export const DriverProofCaptureScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing || isFetching} onRefresh={onRefresh} />
-        }
-      >
+      <ScrollView style={styles.container}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Proof Capture Flow</Text>
+          <Text style={styles.sectionTitle}>Upload Proof of Performance</Text>
           <Text style={styles.helper}>
-            Submit proof by updating driver location and transitioning booking to
-            `awaiting_review`.
+            Capture a timestamped photo with GPS location to prove completion of your run.
           </Text>
 
-          <Text style={styles.fieldLabel}>Running Booking</Text>
+          <Text style={styles.fieldLabel}>Select Running Booking</Text>
           {runningBookings.length === 0 ? (
-            <Text style={styles.emptyText}>No running bookings available for proof submission.</Text>
+            <Text style={styles.emptyText}>No running bookings available.</Text>
           ) : (
             <View style={styles.bookingList}>
               {runningBookings.map((booking) => {
@@ -150,46 +262,67 @@ export const DriverProofCaptureScreen = () => {
             </View>
           )}
 
-          <Text style={styles.fieldLabel}>Proof Note (captured in app log)</Text>
+          {capturedImage ? (
+            <View style={styles.imagePreviewContainer}>
+              <Text style={styles.fieldLabel}>Captured Image</Text>
+              <Image source={{ uri: capturedImage }} style={styles.imagePreview} />
+              {capturedLocation && (
+                <Text style={styles.locationText}>
+                  Location: {capturedLocation.latitude.toFixed(6)}, {capturedLocation.longitude.toFixed(6)}
+                </Text>
+              )}
+              {capturedAt && (
+                <Text style={styles.locationText}>
+                  Captured: {capturedAt.toLocaleString()}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => {
+                  setCapturedImage(null);
+                  setCapturedLocation(null);
+                  setCapturedAt(null);
+                }}
+              >
+                <Text style={styles.secondaryButtonText}>Clear Image</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.captureButtonsContainer}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleTakePicture}
+              >
+                <Text style={styles.primaryButtonText}>Take Picture</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={handlePickFromGallery}
+              >
+                <Text style={styles.secondaryButtonText}>Pick from Gallery</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Text style={styles.fieldLabel}>Notes (Optional)</Text>
           <TextInput
             style={[styles.input, styles.multilineInput]}
             value={proofNote}
             onChangeText={setProofNote}
+            placeholder="Add any notes about this run..."
             multiline
-          />
-
-          <Text style={styles.fieldLabel}>Latitude</Text>
-          <TextInput
-            style={styles.input}
-            value={latitude}
-            onChangeText={setLatitude}
-            keyboardType="decimal-pad"
-          />
-
-          <Text style={styles.fieldLabel}>Longitude</Text>
-          <TextInput
-            style={styles.input}
-            value={longitude}
-            onChangeText={setLongitude}
-            keyboardType="decimal-pad"
           />
 
           {actionError ? <Text style={styles.errorText}>{actionError}</Text> : null}
           {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
           <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => void handleSubmitProof()}
-            disabled={
-              updateBookingStatus.isPending ||
-              updateDriverLocation.isPending ||
-              !selectedBookingId
-            }
+            style={[styles.uploadButton, (!capturedImage || uploadProof.isPending) && styles.disabledButton]}
+            onPress={handleUploadProof}
+            disabled={!capturedImage || uploadProof.isPending}
           >
             <Text style={styles.primaryButtonText}>
-              {updateBookingStatus.isPending || updateDriverLocation.isPending
-                ? 'Submitting...'
-                : 'Submit Proof'}
+              {uploadProof.isPending ? 'Uploading...' : 'Upload Proof'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -219,6 +352,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
@@ -230,14 +364,14 @@ const styles = StyleSheet.create({
   helper: {
     color: theme.colors.mutedForeground,
     fontSize: theme.fontSize.xs,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   fieldLabel: {
     color: theme.colors.foreground,
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
     marginBottom: 6,
-    marginTop: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
   },
   input: {
     borderWidth: 1,
@@ -282,6 +416,24 @@ const styles = StyleSheet.create({
     color: theme.colors.mutedForeground,
     fontSize: theme.fontSize.sm,
   },
+  captureButtonsContainer: {
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+  },
+  imagePreviewContainer: {
+    marginTop: theme.spacing.sm,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 300,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+  },
+  locationText: {
+    color: theme.colors.mutedForeground,
+    fontSize: theme.fontSize.xs,
+    marginBottom: 4,
+  },
   errorText: {
     color: theme.colors.destructive,
     fontSize: theme.fontSize.sm,
@@ -293,17 +445,78 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   primaryButton: {
-    marginTop: theme.spacing.sm,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.md,
     alignItems: 'center',
     paddingVertical: theme.spacing.sm,
   },
+  secondaryButton: {
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+  },
+  uploadButton: {
+    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
   primaryButtonText: {
     color: theme.colors.primaryForeground,
     fontWeight: theme.fontWeight.semibold,
   },
+  secondaryButtonText: {
+    color: theme.colors.foreground,
+    fontWeight: theme.fontWeight.medium,
+  },
   bottomSpacing: {
     height: theme.spacing.lg,
+  },
+  cameraContainer: {
+    flex: 1,
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: theme.spacing.lg,
+  },
+  cancelButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: theme.fontSize.base,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  captureButton: {
+    alignSelf: 'center',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff',
   },
 });

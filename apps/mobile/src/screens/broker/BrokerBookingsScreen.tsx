@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -10,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useBookings, useUpdateBookingStatus } from '@/hooks';
+import { useBookings, useUpdateBookingStatus, useCreateDepositSession } from '@/hooks';
 import { BookingStatus } from '@/types/api';
 import { formatCurrencyFromCents } from '@/lib/format';
 import { theme } from '@/lib/theme';
@@ -31,6 +33,7 @@ export const BrokerBookingsScreen = () => {
   } = useBookings({ refetchInterval: 10000 });
 
   const updateStatus = useUpdateBookingStatus();
+  const createDepositSession = useCreateDepositSession();
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
@@ -44,6 +47,53 @@ export const BrokerBookingsScreen = () => {
     await refetch();
     setRefreshing(false);
   }, [refetch]);
+
+  const handlePayment = async (bookingId: string, amountCents: number) => {
+    setActionError(null);
+    setActiveBookingId(bookingId);
+
+    try {
+      // Create Stripe checkout session
+      const { url } = await createDepositSession.mutateAsync({
+        bookingId,
+        amountCents,
+        successUrl: 'ledbillboard://payment-success',
+        cancelUrl: 'ledbillboard://payment-cancel',
+      });
+
+      // Open Stripe checkout in browser
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+
+        // Show message about payment
+        Alert.alert(
+          'Payment Started',
+          'Complete the payment in your browser. The booking will be confirmed automatically after successful payment.',
+          [
+            {
+              text: 'Check Payment Status',
+              onPress: () => void refetch(),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ]
+        );
+      } else {
+        throw new Error('Cannot open payment URL');
+      }
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to initiate payment.'
+      );
+    } finally {
+      setActiveBookingId(null);
+    }
+  };
 
   const handleTransition = async (bookingId: string, status: BookingStatus) => {
     setActionError(null);
@@ -116,7 +166,8 @@ export const BrokerBookingsScreen = () => {
               )
               .map((booking) => {
                 const isBusy =
-                  updateStatus.isPending && activeBookingId === booking.id;
+                  (updateStatus.isPending || createDepositSession.isPending) &&
+                  activeBookingId === booking.id;
 
                 return (
                   <View key={booking.id} style={styles.card}>
@@ -133,11 +184,11 @@ export const BrokerBookingsScreen = () => {
                       {booking.status === 'pending_deposit' ? (
                         <TouchableOpacity
                           style={styles.primaryAction}
-                          onPress={() => void handleTransition(booking.id, 'confirmed')}
+                          onPress={() => void handlePayment(booking.id, booking.amountCents)}
                           disabled={isBusy}
                         >
                           <Text style={styles.primaryActionText}>
-                            {isBusy ? 'Saving...' : 'Confirm Deposit'}
+                            {isBusy ? 'Processing...' : 'Pay Deposit'}
                           </Text>
                         </TouchableOpacity>
                       ) : null}

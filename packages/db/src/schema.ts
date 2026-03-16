@@ -11,6 +11,7 @@ import {
   pgEnum,
   index,
   uniqueIndex,
+  numeric,
 } from 'drizzle-orm/pg-core';
 
 // Enums
@@ -31,12 +32,32 @@ export const bookingStatusEnum = pgEnum('booking_status', [
   'disputed',
 ]);
 
+export const transactionTypeEnum = pgEnum('transaction_type', [
+  'deposit',
+  'withdrawal',
+  'refund',
+  'payout',
+  'platform_fee',
+]);
+
+export const transactionStatusEnum = pgEnum('transaction_status', [
+  'pending',
+  'completed',
+  'failed',
+]);
+
 export const offerStatusEnum = pgEnum('offer_status', [
   'pending',
   'countered',
   'accepted',
   'rejected',
   'expired',
+]);
+
+export const proofStatusEnum = pgEnum('proof_status', [
+  'pending_review',
+  'approved',
+  'rejected',
 ]);
 
 // Organizations table
@@ -262,5 +283,67 @@ export const driverPresence = pgTable(
       table.latitude,
       table.longitude
     ),
+  })
+);
+
+// Wallet transactions table
+export const walletTransactions = pgTable(
+  'wallet_transactions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    bookingId: uuid('booking_id').references(() => bookings.id, {
+      onDelete: 'set null',
+    }),
+    amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+    type: transactionTypeEnum('type').notNull(),
+    status: transactionStatusEnum('status').default('pending').notNull(),
+    paymentMethod: varchar('payment_method', { length: 50 }),
+    externalTransactionId: varchar('external_transaction_id', { length: 255 }),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (table) => ({
+    userIdx: index('wallet_transactions_user_idx').on(table.userId, table.createdAt),
+    bookingIdx: index('wallet_transactions_booking_idx').on(table.bookingId),
+    statusIdx: index('wallet_transactions_status_idx').on(table.status),
+    typeIdx: index('wallet_transactions_type_idx').on(table.type),
+  })
+);
+
+// Proof uploads table
+export const proofUploads = pgTable(
+  'proof_uploads',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    bookingId: uuid('booking_id')
+      .references(() => bookings.id, { onDelete: 'cascade' })
+      .notNull(),
+    driverUserId: uuid('driver_user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    imageUrl: text('image_url').notNull(),
+    latitude: numeric('latitude', { precision: 10, scale: 7 }),
+    longitude: numeric('longitude', { precision: 10, scale: 7 }),
+    capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
+    uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow().notNull(),
+    notes: text('notes'),
+    status: proofStatusEnum('status').default('pending_review').notNull(),
+    reviewedBy: uuid('reviewed_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    rejectionReason: text('rejection_reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    bookingIdx: index('proof_uploads_booking_idx').on(table.bookingId),
+    driverIdx: index('proof_uploads_driver_idx').on(table.driverUserId),
+    statusIdx: index('proof_uploads_status_idx').on(table.status),
+    capturedAtIdx: index('proof_uploads_captured_at_idx').on(table.capturedAt),
   })
 );
