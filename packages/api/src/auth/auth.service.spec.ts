@@ -54,7 +54,10 @@ describe('AuthService', () => {
                 {
                     provide: SmsService,
                     useValue: {
-                        sendOtp: jest.fn(),
+                        sendOtp: jest.fn().mockResolvedValue({
+                            success: true,
+                            messageId: 'test-message-id',
+                        }),
                     },
                 },
             ],

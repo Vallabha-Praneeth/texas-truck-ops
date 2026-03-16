@@ -2,6 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { SmsService } from './sms.service';
 
+// Force service to use real Twilio logic instead of test mode
+// so we can properly test the Twilio integration
+const originalNodeEnv = process.env.NODE_ENV;
+const originalTestMode = process.env.TEST_MODE;
+
 describe('SmsService', () => {
     let service: SmsService;
     let configService: ConfigService;
@@ -12,6 +17,18 @@ describe('SmsService', () => {
             create: jest.fn(),
         },
     };
+
+    beforeAll(() => {
+        // Disable test mode for these tests
+        process.env.NODE_ENV = 'development';
+        process.env.TEST_MODE = 'false';
+    });
+
+    afterAll(() => {
+        // Restore original env vars
+        process.env.NODE_ENV = originalNodeEnv;
+        process.env.TEST_MODE = originalTestMode;
+    });
 
     beforeEach(async () => {
         // Mock ConfigService
