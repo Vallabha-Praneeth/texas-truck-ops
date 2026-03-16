@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
+import { SmsService } from '../notifications/sms.service';
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -48,6 +49,12 @@ describe('AuthService', () => {
                         findByPhone: jest.fn(),
                         findById: jest.fn(),
                         create: jest.fn(),
+                    },
+                },
+                {
+                    provide: SmsService,
+                    useValue: {
+                        sendOtp: jest.fn(),
                     },
                 },
             ],
