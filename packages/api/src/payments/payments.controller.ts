@@ -89,7 +89,7 @@ export class PaymentsController {
           await this.stripeService.handlePaymentFailure(event.data.object as any);
           break;
 
-        case 'checkout.session.completed':
+        case 'checkout.session.completed': {
           // Handle successful checkout session
           const session = event.data.object as any;
           if (session.payment_intent) {
@@ -99,6 +99,7 @@ export class PaymentsController {
             await this.stripeService.handlePaymentSuccess(paymentIntent);
           }
           break;
+        }
 
         case 'checkout.session.expired':
           // Handle expired checkout session (optional)

@@ -5,7 +5,6 @@ import {
   Param,
   UseGuards,
   Request,
-  ValidationPipe,
 } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

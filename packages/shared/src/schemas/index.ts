@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BookingStatus, UserRole, TransactionType, TransactionStatus, ProofStatus } from '../types';
+import { BookingStatus, UserRole, TransactionType, TransactionStatus } from '../types';
 
 // Auth schemas
 export const sendOtpSchema = z.object({
