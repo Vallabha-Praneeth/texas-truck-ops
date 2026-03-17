@@ -131,6 +131,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Python with setuptools
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+        continue-on-error: false
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
