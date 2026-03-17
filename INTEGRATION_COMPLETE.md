@@ -213,7 +213,7 @@ TWILIO_TEST_MODE=true ✅
 
 # Supabase
 SUPABASE_URL=https://taiidoqrswyrttzabmxg.supabase.co ✅
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... ✅
+SUPABASE_ANON_KEY=your-supabase-anon-key ✅
 ```
 
 ---

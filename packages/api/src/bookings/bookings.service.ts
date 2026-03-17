@@ -7,8 +7,9 @@ import {
     trucks,
     requests,
     users,
+    orgMembers,
 } from '@led-billboard/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { RealtimeService } from '../realtime/realtime.service';
 import { WalletService } from '../wallet/wallet.service';
 
@@ -234,9 +235,26 @@ export class BookingService {
         const platformFeeCents = Math.floor(totalAmountCents * platformFeePercent);
         const operatorPayoutCents = totalAmountCents - platformFeeCents;
 
-        // For now, use the operator org ID as the user ID
-        // In a real implementation, you'd query org_members to find the org owner
-        const operatorUserId = booking.operatorOrgId;
+        // Query org_members to find a user from the operator's organization
+        // Prefer users with 'operator' or 'admin' role
+        const orgMember = await this.db.query.orgMembers.findFirst({
+            where: (orgMembers, { eq, or }) => eq(orgMembers.orgId, booking.operatorOrgId),
+            orderBy: (orgMembers, { desc }) => [
+                desc(
+                    sql`CASE
+                        WHEN ${orgMembers.role} = 'operator' THEN 2
+                        WHEN ${orgMembers.role} = 'admin' THEN 1
+                        ELSE 0
+                    END`
+                ),
+            ],
+        });
+
+        if (!orgMember) {
+            throw new Error(`No organization members found for operator org ${booking.operatorOrgId}`);
+        }
+
+        const operatorUserId = orgMember.userId;
 
         // Create payout transaction
         await this.walletService.createPayoutTransaction(
