@@ -237,7 +237,7 @@ export class BookingService {
 
         // Query org_members to find a user from the operator's organization
         // Prefer users with 'operator' or 'admin' role
-        const orgMember = await this.db.query.orgMembers.findFirst({
+        const orgMember = await db.query.orgMembers.findFirst({
             where: (orgMembers, { eq, or }) => eq(orgMembers.orgId, booking.operatorOrgId),
             orderBy: (orgMembers, { desc }) => [
                 desc(
