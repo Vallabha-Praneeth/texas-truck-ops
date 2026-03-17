@@ -133,7 +133,7 @@ jobs:
 
       - name: Setup Python with setuptools
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install --break-system-packages --upgrade pip setuptools wheel
         continue-on-error: false
 
       - name: Install dependencies
