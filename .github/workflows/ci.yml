@@ -108,7 +108,7 @@ jobs:
         run: pnpm migrate
 
       - name: Run API E2E tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e:playwright
 
       - name: Upload test results
         if: always()
