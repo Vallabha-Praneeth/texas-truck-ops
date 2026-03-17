@@ -9,7 +9,7 @@ import {
     users,
     orgMembers,
 } from '@led-billboard/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, desc } from 'drizzle-orm';
 import { RealtimeService } from '../realtime/realtime.service';
 import { WalletService } from '../wallet/wallet.service';
 
@@ -237,18 +237,23 @@ export class BookingService {
 
         // Query org_members to find a user from the operator's organization
         // Prefer users with 'operator' or 'admin' role
-        const orgMember = await db.query.orgMembers.findFirst({
-            where: (orgMembers, { eq, or }) => eq(orgMembers.orgId, booking.operatorOrgId),
-            orderBy: (orgMembers, { desc }) => [
+        const [orgMember] = await db
+            .select({
+                userId: orgMembers.userId,
+                role: orgMembers.role,
+            })
+            .from(orgMembers)
+            .where(eq(orgMembers.orgId, booking.operatorOrgId))
+            .orderBy(
                 desc(
                     sql`CASE
                         WHEN ${orgMembers.role} = 'operator' THEN 2
                         WHEN ${orgMembers.role} = 'admin' THEN 1
                         ELSE 0
                     END`
-                ),
-            ],
-        });
+                )
+            )
+            .limit(1);
 
         if (!orgMember) {
             throw new Error(`No organization members found for operator org ${booking.operatorOrgId}`);
