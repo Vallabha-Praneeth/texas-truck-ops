@@ -131,13 +131,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python with setuptools
-        run: |
-          python3 -m pip install --break-system-packages --upgrade pip setuptools wheel
-        continue-on-error: false
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # Skip native build scripts that may fail (e.g., appium-ios-tuntap with Python issues)
+        # Then retry with scripts enabled - most packages will be cached and only essential ones will build
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts || true
+          pnpm install --frozen-lockfile
 
       - name: Install CocoaPods dependencies
         run: cd apps/mobile/ios && pod install --deployment
