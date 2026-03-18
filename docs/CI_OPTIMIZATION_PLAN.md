@@ -1,5 +1,8 @@
 # CI Optimization Plan - Priority 4
 
+> **Status**: Phase 1 completed ✅ | Phase 2 attempted and reverted ❌
+> **See**: [CI_OPTIMIZATION_DECISION_LOG.md](./CI_OPTIMIZATION_DECISION_LOG.md) for full results and learnings
+
 ## Current State
 
 **Total CI Time** (worst case):
@@ -103,29 +106,35 @@ api-e2e:
 **Expected Savings**: ~3-5 min per run
 **Risk**: Low
 
-### Phase 2: Parallel iOS Tests (15 min implementation)
-1. ✅ Split ios-xctest-suite into 3 parallel jobs using matrix
+### Phase 2: Parallel iOS Tests ❌ REVERTED
+1. ~~Split ios-xctest-suite into 3 parallel jobs using matrix~~
 
-**Expected Savings**: ~13 min
-**Risk**: Medium (requires self-hosted runner capacity)
-**Consideration**: Check if self-hosted runner can handle 3 simultaneous jobs
+**Status**: Attempted and reverted (see [CI_OPTIMIZATION_DECISION_LOG.md](./CI_OPTIMIZATION_DECISION_LOG.md))
+**Result**: 32% performance regression (+8 min instead of -13 min)
+**Reason**: Self-hosted runner processes jobs sequentially; matrix added overhead
+**Reference**: Code preserved at git tag `phase2-parallel-experiment`
 
 ### Phase 3: Advanced (Future)
 1. ⏭️ Test result caching (skip unchanged tests)
 2. ⏭️ Distributed test execution
 3. ⏭️ Build caching for Android/iOS
 
-## Estimated Impact
+## Actual Results
 
 **Before Optimization**:
 - Total CI time: 41-58 minutes
 - iOS XCTest suite: ~25 minutes
 - Cache misses: 2-5 minutes wasted
 
-**After Phase 1 + Phase 2**:
-- Total CI time: 25-35 minutes (-16-23 min / ~40% faster)
-- iOS XCTest suite: ~12 minutes (parallel)
-- Cache hits: ~2-4 min savings
+**After Phase 1 (Current State)**:
+- Total CI time: 38-53 minutes (~3-5 min faster)
+- iOS XCTest suite: ~25 minutes (sequential, unchanged)
+- Cache hits: ~3-5 min savings (CocoaPods + Playwright)
+- API E2E: 14 integration tests added
+
+**Phase 2 Experiment** (reverted):
+- iOS XCTest suite: ~33 minutes (8 min slower due to overhead)
+- See [decision log](./CI_OPTIMIZATION_DECISION_LOG.md) for details
 
 ## Implementation Order
 

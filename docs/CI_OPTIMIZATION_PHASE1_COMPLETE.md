@@ -133,12 +133,13 @@ quality
 - **Baseline** (first run): Record total time
 - **Cached run**: Should be ~4-6 min faster
 
-## Next Steps
+## Phase 2 Update
 
-**Phase 2**: Parallelize iOS XCTest Suite
-- Split into 3 parallel jobs
-- Expected savings: ~13 min
-- Requires self-hosted runner capacity check
+**Phase 2** (iOS Parallelization): ❌ Attempted and reverted
+- Matrix strategy implemented but caused 32% performance regression
+- Single self-hosted runner processed jobs sequentially, adding overhead
+- See [CI_OPTIMIZATION_DECISION_LOG.md](./CI_OPTIMIZATION_DECISION_LOG.md) for full analysis
+- Code preserved at git tag `phase2-parallel-experiment` for future reference
 
 ## Rollback Plan
 
