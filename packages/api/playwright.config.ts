@@ -19,11 +19,12 @@ export default defineConfig({
         },
     ],
 
-    // Run the API server before tests
-    webServer: {
+    // Run the API server before tests (only in local development)
+    // In CI, the server is started manually in the workflow
+    webServer: process.env.CI ? undefined : {
         command: 'pnpm dev',
         url: 'http://localhost:3010/api',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
         timeout: 120 * 1000,
     },
 });

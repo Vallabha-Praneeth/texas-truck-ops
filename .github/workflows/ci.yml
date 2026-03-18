@@ -45,6 +45,103 @@ jobs:
       - name: Unit and integration tests
         run: pnpm test
 
+  # ── API E2E ──────────────────────────────────────────────────────────────
+  # Runs API integration tests with real Postgres + Redis services.
+  # Tests run in isolated mode with automatic cleanup between tests.
+  api-e2e:
+    name: API E2E
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/api
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: billboard_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/billboard_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: test-secret-key
+      NODE_ENV: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        working-directory: .
+        run: pnpm --filter=@led-billboard/db --filter=@led-billboard/shared --filter=@led-billboard/api build
+
+      - name: Run database migrations
+        working-directory: packages/db
+        run: pnpm migrate
+
+      - name: Start API server in background
+        working-directory: packages/api
+        run: |
+          # Start server with output redirected to log file
+          pnpm start:ci > .api-server.log 2>&1 &
+          echo $! > .api.pid
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3010/api/health > /dev/null 2>&1; do sleep 1; done' || (echo "Server failed to start. Logs:"; cat .api-server.log; exit 1)
+
+      - name: Run API E2E tests
+        env:
+          CI: "true"
+        run: pnpm test:e2e:playwright
+
+      - name: Stop API server
+        if: always()
+        working-directory: packages/api
+        run: |
+          if [ -f .api.pid ]; then
+            kill $(cat .api.pid) || true
+            rm .api.pid
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-e2e-results
+          path: packages/api/test-results/
+          retention-days: 7
+
   # Lightweight iOS gate — runs on GitHub-hosted macOS, satisfies the required
   # branch-protection check.  It validates static iOS health (App Store baseline
   # and Info.plist permissions) and skips if no iOS-relevant files changed.
@@ -123,6 +220,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/mobile/ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: pods-${{ hashFiles('apps/mobile/ios/Podfile.lock') }}
+          restore-keys: |
+            pods-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -305,7 +413,17 @@ jobs:
         working-directory: .
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/admin/package.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
 
       - name: Run Web E2E tests
