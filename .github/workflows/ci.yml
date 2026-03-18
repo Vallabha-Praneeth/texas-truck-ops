@@ -114,10 +114,11 @@ jobs:
       - name: Start API server in background
         working-directory: packages/api
         run: |
-          pnpm start:ci &
+          # Start server with output redirected to log file
+          pnpm start:ci > .api-server.log 2>&1 &
           echo $! > .api.pid
           # Wait for server to be ready
-          timeout 30 bash -c 'until curl -f http://localhost:3010/api > /dev/null 2>&1; do sleep 1; done' || (cat dist/main.js 2>/dev/null; exit 1)
+          timeout 30 bash -c 'until curl -f http://localhost:3010/api > /dev/null 2>&1; do sleep 1; done' || (echo "Server failed to start. Logs:"; cat .api-server.log; exit 1)
 
       - name: Run API E2E tests
         env:
