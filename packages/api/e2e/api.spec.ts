@@ -16,7 +16,7 @@ test.describe('API E2E Tests', () => {
     test.describe.configure({ mode: 'serial' }); // Run tests in order
 
     test('1. Health Check - API should be running', async ({ request }) => {
-        const response = await request.get(`${API_BASE}`);
+        const response = await request.get(`${API_BASE}/health`);
         expect(response.ok()).toBeTruthy();
     });
 
