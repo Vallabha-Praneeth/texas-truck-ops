@@ -21,7 +21,7 @@ export default defineConfig({
 
     // Run the API server before tests
     webServer: {
-        command: 'pnpm dev',
+        command: process.env.CI ? 'pnpm start:ci' : 'pnpm dev',
         url: 'http://localhost:3010/api',
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,
