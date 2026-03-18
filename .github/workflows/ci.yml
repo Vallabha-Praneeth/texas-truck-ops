@@ -111,8 +111,27 @@ jobs:
         working-directory: packages/db
         run: pnpm migrate
 
+      - name: Start API server in background
+        working-directory: packages/api
+        run: |
+          pnpm start:ci &
+          echo $! > .api.pid
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3010/api > /dev/null 2>&1; do sleep 1; done' || (cat dist/main.js 2>/dev/null; exit 1)
+
       - name: Run API E2E tests
+        env:
+          CI: "true"
         run: pnpm test:e2e:playwright
+
+      - name: Stop API server
+        if: always()
+        working-directory: packages/api
+        run: |
+          if [ -f .api.pid ]; then
+            kill $(cat .api.pid) || true
+            rm .api.pid
+          fi
 
       - name: Upload test results
         if: always()
