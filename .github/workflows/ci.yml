@@ -103,6 +103,10 @@ jobs:
         working-directory: .
         run: pnpm install --frozen-lockfile
 
+      - name: Build packages
+        working-directory: .
+        run: pnpm build --filter=@led-billboard/db --filter=@led-billboard/shared --filter=@led-billboard/api
+
       - name: Run database migrations
         working-directory: packages/db
         run: pnpm migrate
