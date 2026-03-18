@@ -58,7 +58,7 @@ jobs:
         working-directory: packages/api
     services:
       postgres:
-        image: postgres:15
+        image: postgis/postgis:15-3.4
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
