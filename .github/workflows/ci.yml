@@ -199,17 +199,31 @@ jobs:
   # setup-pnpm actions to avoid PATH conflicts with Expo's autolinking.
   # Optional (not required by branch protection).
   #
-  # Runs all three xctestplan configurations in sequence within a single job
-  # so they share the same pod install, Metro process, and simulator state:
+  # Phase 2 Optimization: Runs all three xctestplan configurations in PARALLEL
+  # using a matrix strategy. Each job does its own pod install (fast with cache)
+  # and runs independently. Previously ran sequentially (~25 min), now ~12 min.
   #   1. FastRegression  (5 tests)  — auth entry, phone input, OTP, password login
   #   2. LocalAuthE2E   (10 tests)  — deeper auth flows with real OTP bypass
   #   3. Accessibility   (3 tests)  — VoiceOver / XCUIElement accessibility audits
   ios-xctest-suite:
     needs: ios-fast-regression
     runs-on: [self-hosted, macOS, mobile]
-    timeout-minutes: 60
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite:
+          - name: FastRegression
+            script: ios:test:fast:regression
+            log: xcodebuild-fastregression.log
+          - name: LocalAuthE2E
+            script: ios:test:local-auth:ci
+            log: xcodebuild-local-auth-e2e.log
+          - name: Accessibility
+            script: ios:test:a11y:ci
+            log: xcodebuild-accessibility.log
     concurrency:
-      group: ios-simulator-lanes
+      group: ios-simulator-${{ matrix.test-suite.name }}
       cancel-in-progress: false
     env:
       IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.0
@@ -238,48 +252,18 @@ jobs:
       - name: Install CocoaPods dependencies
         run: cd apps/mobile/ios && pod install --deployment
 
-      # ── FastRegression ─────────────────────────────────────────────────────
-      - name: Run iOS FastRegression (xcodebuild)
+      # ── Run Test Suite (Matrix) ───────────────────────────────────────────
+      - name: Run iOS ${{ matrix.test-suite.name }} (xcodebuild)
         env:
-          XCODEBUILD_LOG: /tmp/xcodebuild-fastregression.log
-        run: pnpm ios:test:fast:regression
+          XCODEBUILD_LOG: /tmp/${{ matrix.test-suite.log }}
+        run: pnpm ${{ matrix.test-suite.script }}
 
-      - name: Upload FastRegression xcodebuild log
+      - name: Upload ${{ matrix.test-suite.name }} xcodebuild log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xctest-fastregression-log
-          path: /tmp/xcodebuild-fastregression.log
-          retention-days: 7
-
-      # ── LocalAuthE2E ───────────────────────────────────────────────────────
-      # Metro is force-restarted by run-xctest-config.sh; the bundle is already
-      # in Metro's transform cache from FastRegression so warm-up is near-instant.
-      - name: Run iOS LocalAuthE2E (xcodebuild)
-        env:
-          XCODEBUILD_LOG: /tmp/xcodebuild-local-auth-e2e.log
-        run: pnpm ios:test:local-auth:ci
-
-      - name: Upload LocalAuthE2E xcodebuild log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xctest-local-auth-e2e-log
-          path: /tmp/xcodebuild-local-auth-e2e.log
-          retention-days: 7
-
-      # ── Accessibility ──────────────────────────────────────────────────────
-      - name: Run iOS Accessibility (xcodebuild)
-        env:
-          XCODEBUILD_LOG: /tmp/xcodebuild-accessibility.log
-        run: pnpm ios:test:a11y:ci
-
-      - name: Upload Accessibility xcodebuild log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xctest-accessibility-log
-          path: /tmp/xcodebuild-accessibility.log
+          name: xctest-${{ matrix.test-suite.name }}-log
+          path: /tmp/${{ matrix.test-suite.log }}
           retention-days: 7
 
       # ── Service logs (failure only) ────────────────────────────────────────
@@ -287,7 +271,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: xctest-service-logs
+          name: xctest-service-logs-${{ matrix.test-suite.name }}
           path: |
             apps/mobile/.metro-8082.log
             apps/mobile/.api-8081.log
