@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BookingStatus, UserRole } from '../types';
+import { BookingStatus, UserRole, TransactionType, TransactionStatus } from '../types';
 
 // Auth schemas
 export const sendOtpSchema = z.object({
@@ -154,25 +154,44 @@ export const createMessageSchema = z.object({
 // Proof upload schemas
 export const createProofUploadSchema = z.object({
     bookingId: z.string().uuid(),
-    type: z.enum(['photo', 'video', 'gps_log']),
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
     capturedAt: z.string().datetime(),
+    notes: z.string().max(1000).optional(),
 });
 
-export const submitProofSchema = z.object({
-    bookingId: z.string().uuid(),
+export const approveProofSchema = z.object({
+    proofId: z.string().uuid(),
+});
+
+export const rejectProofSchema = z.object({
+    proofId: z.string().uuid(),
+    reason: z.string().min(1).max(500),
 });
 
 // Wallet schemas
+export const depositSchema = z.object({
+    bookingId: z.string().uuid(),
+    amountCents: z.number().int().positive(),
+    successUrl: z.string().url().optional(),
+    cancelUrl: z.string().url().optional(),
+});
+
+export const withdrawSchema = z.object({
+    amountCents: z.number().int().positive(),
+    bankAccountId: z.string().optional(),
+});
+
 export const getWalletBalanceSchema = z.object({
-    organizationId: z.string().uuid(),
+    userId: z.string().uuid().optional(), // Optional - defaults to current user
 });
 
 export const getTransactionsSchema = z.object({
-    organizationId: z.string().uuid(),
-    limit: z.number().int().positive().max(100).default(20),
-    offset: z.number().int().nonnegative().default(0),
+    userId: z.string().uuid().optional(), // Optional - defaults to current user
+    type: z.nativeEnum(TransactionType).optional(),
+    status: z.nativeEnum(TransactionStatus).optional(),
+    limit: z.coerce.number().int().positive().max(100).default(20),
+    offset: z.coerce.number().int().nonnegative().default(0),
 });
 
 // Driver location schemas
@@ -212,7 +231,10 @@ export type AcceptOfferDto = z.infer<typeof acceptOfferSchema>;
 export type UpdateBookingStatusDto = z.infer<typeof updateBookingStatusSchema>;
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;
 export type CreateProofUploadDto = z.infer<typeof createProofUploadSchema>;
-export type SubmitProofDto = z.infer<typeof submitProofSchema>;
+export type ApproveProofDto = z.infer<typeof approveProofSchema>;
+export type RejectProofDto = z.infer<typeof rejectProofSchema>;
+export type DepositDto = z.infer<typeof depositSchema>;
+export type WithdrawDto = z.infer<typeof withdrawSchema>;
 export type GetWalletBalanceDto = z.infer<typeof getWalletBalanceSchema>;
 export type GetTransactionsDto = z.infer<typeof getTransactionsSchema>;
 export type UpdateDriverLocationDto = z.infer<typeof updateDriverLocationSchema>;

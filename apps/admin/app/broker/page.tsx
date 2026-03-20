@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { ProofApprovalsBadge } from '@/components/ProofApprovalsBadge';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
 
@@ -481,9 +482,20 @@ export default function BrokerDashboard() {
             <h1 className="text-2xl font-bold">Broker Dashboard</h1>
             {user && <p className="text-sm text-gray-600">Welcome, {user.displayName}</p>}
           </div>
-          <Button variant="outline" onClick={handleLogout} data-testid="logout-button">
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push('/broker/proofs')}
+              data-testid="proof-approvals-button"
+              className="relative"
+            >
+              Proof Approvals
+              <ProofApprovalsBadge />
+            </Button>
+            <Button variant="outline" onClick={handleLogout} data-testid="logout-button">
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 

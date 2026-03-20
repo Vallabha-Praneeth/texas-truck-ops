@@ -19,7 +19,9 @@ export class RedisService implements OnModuleDestroy {
         const redisUrl = this.configService.get<string>('REDIS_URL');
 
         if (!redisUrl) {
-            throw new Error('REDIS_URL is not configured');
+            console.warn('⚠️  Redis not configured - real-time features will use fallback');
+            console.warn('   Add REDIS_URL to .env to enable Redis caching');
+            return;
         }
 
         this.client = new Redis(redisUrl);

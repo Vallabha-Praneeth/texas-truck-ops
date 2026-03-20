@@ -1,0 +1,43 @@
+name: ios-accessibility
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to test (branch, tag, or SHA)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 3 * * 1'
+
+jobs:
+  accessibility:
+    runs-on: [self-hosted, macOS, mobile]
+    timeout-minutes: 60
+    concurrency:
+      group: ios-simulator-lanes
+      cancel-in-progress: false
+    env:
+      IOS_DESTINATION: platform=iOS Simulator,name=iPhone 16
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run iOS Accessibility lane
+        run: pnpm ios:test:a11y

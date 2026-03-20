@@ -13,3 +13,6 @@ export type { KPICardProps } from './cards/KPICard';
 // Lottie
 export { LottieIcon } from './LottieIcon';
 export type { LottieIconProps } from './LottieIcon';
+
+// Wallet
+export { WalletBalanceCard } from './WalletBalanceCard';

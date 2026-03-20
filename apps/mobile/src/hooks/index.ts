@@ -5,3 +5,6 @@ export * from './useTrucks';
 export * from './useDriverLocation';
 export * from './useUser';
 export * from './useRequests';
+export * from './usePayment';
+export * from './useProofs';
+export * from './useWallet';

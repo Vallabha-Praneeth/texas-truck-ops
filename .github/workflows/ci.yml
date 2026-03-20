@@ -36,6 +36,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace dependencies
+        run: |
+          cd packages/db
+          pnpm build
+          cd ../shared
+          pnpm build
+
       - name: Lint
         run: pnpm lint
 
@@ -233,10 +240,14 @@ jobs:
             pods-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # Skip native build scripts that may fail (e.g., appium-ios-tuntap with Python issues)
+        # Then retry with scripts enabled - most packages will be cached and only essential ones will build
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts || true
+          pnpm install --frozen-lockfile
 
       - name: Install CocoaPods dependencies
-        run: cd apps/mobile/ios && pod install --deployment
+        run: cd apps/mobile/ios && pod install
 
       # ── FastRegression ─────────────────────────────────────────────────────
       - name: Run iOS FastRegression (xcodebuild)

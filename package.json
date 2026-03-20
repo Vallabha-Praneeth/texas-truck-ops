@@ -65,10 +65,17 @@
       "@react-native-community/cli-platform-ios>glob": "^7",
       "@react-native-community/cli-platform-android>glob": "^7",
       "serialize-javascript": ">=7.0.3",
-      "tar": ">=7.5.4",
+      "tar": ">=7.5.11",
       "lodash": ">=4.17.23",
       "semver": ">=7.5.2",
-      "axios": ">=1.13.5"
+      "axios": ">=1.13.5",
+      "multer": ">=2.1.1",
+      "undici": ">=7.24.0",
+      "yauzl": ">=3.2.1",
+      "file-type": ">=21.3.2",
+      "send": ">=0.19.0",
+      "qs": ">=6.14.2",
+      "@appium/support": ">=7.0.6"
     }
   }
 }

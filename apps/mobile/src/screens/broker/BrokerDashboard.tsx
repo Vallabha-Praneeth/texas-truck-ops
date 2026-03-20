@@ -9,15 +9,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
-import { KPICard } from '@/components';
+import { KPICard, WalletBalanceCard } from '@/components';
 import { useBookings, useOffers, useRequests } from '@/hooks';
 import { formatCurrencyFromCents, toFiniteNumber } from '@/lib/format';
 import { theme } from '@/lib/theme';
 import loadingAnimation from '@/assets/lottie/icons/loading.json';
 
+type BrokerStackParamList = {
+  WalletTransactions: undefined;
+};
+
 export const BrokerDashboard = () => {
   const { session, logout } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<BrokerStackParamList>>();
 
   const {
     data: requests,
@@ -115,6 +122,12 @@ export const BrokerDashboard = () => {
           <TouchableOpacity style={styles.logoutButton} onPress={() => void logout()}>
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <WalletBalanceCard
+            onViewTransactions={() => navigation.navigate('WalletTransactions')}
+          />
         </View>
 
         <View style={styles.section}>

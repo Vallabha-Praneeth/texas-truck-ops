@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
+import { SmsService } from '../notifications/sms.service';
 
 @Injectable()
 export class AuthService implements OnModuleDestroy {
@@ -23,6 +24,7 @@ export class AuthService implements OnModuleDestroy {
         private configService: ConfigService,
         private redisService: RedisService,
         private usersService: UsersService,
+        private smsService: SmsService,
     ) {
         this.OTP_LENGTH = this.configService.get<number>('OTP_LENGTH') || 6;
         const otpExpiryMinutes = this.configService.get<number>('OTP_EXPIRY_MINUTES') || 10;
@@ -117,8 +119,40 @@ export class AuthService implements OnModuleDestroy {
             }
         }
 
-        // TODO: In production, send OTP via SMS
-        console.log(`📱 OTP for ${phone}: ${otp} (expires in ${this.OTP_EXPIRY_SECONDS}s)`);
+        // Send OTP via SMS using Twilio
+        try {
+            const smsResult = await this.smsService.sendOtp(phone, otp);
+
+            if (!smsResult.success) {
+                console.error(`Failed to send SMS to ${phone}:`, smsResult.error);
+
+                // In development mode, log OTP to console as fallback
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`📱 [FALLBACK] OTP for ${phone}: ${otp} (expires in ${this.OTP_EXPIRY_SECONDS}s)`);
+                    console.warn('⚠️ SMS delivery failed, but OTP is logged above for development');
+                } else {
+                    // In production, throw error if SMS fails
+                    throw new InternalServerErrorException(
+                        'Failed to send verification code. Please try again.'
+                    );
+                }
+            } else {
+                console.log(`✅ OTP sent successfully to ${phone} via SMS (Message ID: ${smsResult.messageId})`);
+            }
+        } catch (error) {
+            console.error('Error sending OTP via SMS:', error);
+
+            // In development mode, log OTP to console as fallback
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`📱 [FALLBACK] OTP for ${phone}: ${otp} (expires in ${this.OTP_EXPIRY_SECONDS}s)`);
+                console.warn('⚠️ SMS service error, but OTP is logged above for development');
+            } else {
+                // In production, throw error
+                throw new InternalServerErrorException(
+                    'Failed to send verification code. Please try again.'
+                );
+            }
+        }
 
         return {
             message: 'OTP sent successfully',

@@ -15,6 +15,7 @@ import { BrokerRequestsScreen } from '@/screens/broker/BrokerRequestsScreen';
 import { BrokerMarketplaceScreen } from '@/screens/broker/BrokerMarketplaceScreen';
 import { BrokerOffersScreen } from '@/screens/broker/BrokerOffersScreen';
 import { BrokerBookingsScreen } from '@/screens/broker/BrokerBookingsScreen';
+import { WalletTransactionsScreen } from '@/screens/wallet/WalletTransactionsScreen';
 import { DriverDashboard } from '@/screens/driver/DriverDashboard';
 import { DriverRunsScreen } from '@/screens/driver/DriverRunsScreen';
 import { DriverProofCaptureScreen } from '@/screens/driver/DriverProofCaptureScreen';
@@ -44,6 +45,11 @@ type BrokerTabParamList = {
   Bookings: undefined;
 };
 
+type BrokerStackParamList = {
+  BrokerTabs: undefined;
+  WalletTransactions: undefined;
+};
+
 type DriverTabParamList = {
   Overview: undefined;
   Runs: undefined;
@@ -54,6 +60,7 @@ type DriverTabParamList = {
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const OperatorTabs = createBottomTabNavigator<OperatorTabParamList>();
 const BrokerTabs = createBottomTabNavigator<BrokerTabParamList>();
+const BrokerStack = createNativeStackNavigator<BrokerStackParamList>();
 const DriverTabs = createBottomTabNavigator<DriverTabParamList>();
 
 const defaultTabScreenOptions = {
@@ -90,6 +97,24 @@ const BrokerTabsNavigator = () => {
   );
 };
 
+const BrokerStackNavigator = () => {
+  return (
+    <BrokerStack.Navigator screenOptions={{ headerShown: false }}>
+      <BrokerStack.Screen name="BrokerTabs" component={BrokerTabsNavigator} />
+      <BrokerStack.Screen
+        name="WalletTransactions"
+        component={WalletTransactionsScreen}
+        options={{
+          headerShown: true,
+          title: 'Transaction History',
+          headerStyle: { backgroundColor: theme.colors.background },
+          headerTintColor: theme.colors.foreground,
+        }}
+      />
+    </BrokerStack.Navigator>
+  );
+};
+
 const DriverTabsNavigator = () => {
   return (
     <DriverTabs.Navigator screenOptions={defaultTabScreenOptions}>
@@ -116,7 +141,7 @@ export const AppNavigator = () => {
         ) : session.user.primaryRole === 'operator' ? (
           <RootStack.Screen name="OperatorApp" component={OperatorTabsNavigator} />
         ) : session.user.primaryRole === 'broker' ? (
-          <RootStack.Screen name="BrokerApp" component={BrokerTabsNavigator} />
+          <RootStack.Screen name="BrokerApp" component={BrokerStackNavigator} />
         ) : session.user.primaryRole === 'driver' ? (
           <RootStack.Screen name="DriverApp" component={DriverTabsNavigator} />
         ) : (

@@ -21,7 +21,7 @@ import {
 export const TOKEN_KEY = '@led_billboard_token';
 export const USER_KEY = '@led_billboard_user';
 
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8081/api';
 
 // Use a shorter timeout outside production so UI tests and local dev don't
@@ -347,5 +347,38 @@ export const api = {
           };
         }[]
       >(`/organizations/${id}/members`),
+  },
+
+  payments: {
+    createDepositSession: (
+      bookingId: string,
+      amountCents: number,
+      successUrl: string,
+      cancelUrl: string
+    ) =>
+      apiClient.post<{ sessionId: string; url: string }>('/payments/deposit', {
+        bookingId,
+        amountCents,
+        successUrl,
+        cancelUrl,
+      }),
+  },
+
+  wallet: {
+    getBalance: () =>
+      apiClient.get<{ balance: number; pendingBalance: number }>(
+        '/wallet/balance'
+      ),
+    getTransactions: (params?: { limit?: number; offset?: number }) =>
+      apiClient.get<
+        {
+          id: string;
+          amount: number;
+          type: string;
+          status: string;
+          createdAt: string;
+          bookingId?: string;
+        }[]
+      >('/wallet/transactions', { params }),
   },
 };

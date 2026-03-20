@@ -1,0 +1,151 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+tone_instructions: "Be concise, technical, and focus on security and performance issues."
+
+reviews:
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT REVIEW"
+
+  # Request changes for critical issues
+  request_changes_workflow: true
+
+  # Review entire PR
+  high_level_summary: true
+  poem: false
+  review_status: true
+
+  # Collapse details
+  collapse_walkthrough: true
+
+  # Focus areas
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/*.tsbuildinfo"
+    - "!**/*.map"
+    - "!pnpm-lock.yaml"
+
+  path_instructions:
+    - path: "packages/api/**/*.ts"
+      instructions: |
+        - Check for SQL injection vulnerabilities
+        - Verify JWT authentication is properly implemented
+        - Ensure all endpoints have proper validation
+        - Check for rate limiting on sensitive endpoints
+        - Verify error messages don't leak sensitive information
+
+    - path: "apps/mobile/src/**/*.{ts,tsx}"
+      instructions: |
+        - Check for hardcoded secrets or API keys
+        - Verify secure storage usage (AsyncStorage vs SecureStore)
+        - Check for proper error handling in API calls
+        - Ensure sensitive data is not logged
+        - Verify navigation security
+
+    - path: "apps/admin/**/*.{ts,tsx}"
+      instructions: |
+        - Check for XSS vulnerabilities
+        - Verify CSRF protection
+        - Check authentication flows
+        - Ensure proper role-based access control
+        - Verify secure data handling
+
+    - path: "packages/db/**/*.ts"
+      instructions: |
+        - Review database schema changes carefully
+        - Check for proper indexes
+        - Verify foreign key constraints
+        - Check for potential performance issues
+        - Ensure migrations are reversible
+
+chat:
+  auto_reply: true
+
+# Security-focused rules
+knowledge_base:
+  auto_apply: true
+
+  learnings:
+    - "Never commit .env files"
+    - "Always use parameterized queries"
+    - "Validate all user inputs"
+    - "Use HTTPS in production"
+    - "Implement rate limiting on auth endpoints"
+    - "Hash passwords with bcrypt"
+    - "Use JWT with short expiration"
+    - "Sanitize error messages"
+    - "Implement CORS properly"
+    - "Use Content Security Policy headers"
+
+# Custom review rules
+review_rules:
+  # Security
+  - name: "Check for exposed secrets"
+    pattern: "(sk_live_|pk_live_|AC[a-z0-9]{32}|whsec_|eyJhbGciOiJ)"
+    message: "Potential secret detected. Never commit API keys or tokens."
+    severity: critical
+
+  - name: "Check for SQL injection"
+    pattern: "\\$\\{.*\\}.*query|query.*\\$\\{.*\\}"
+    message: "Potential SQL injection. Use parameterized queries."
+    severity: critical
+
+  - name: "Check for console.log in production"
+    pattern: "console\\.(log|debug|info)"
+    files: ["packages/api/**/*.ts"]
+    message: "Remove console logs before production. Use proper logging."
+    severity: warning
+
+  # Best practices
+  - name: "Check for any type usage"
+    pattern: ":\\s*any"
+    message: "Avoid using 'any' type. Use specific types or 'unknown'."
+    severity: warning
+
+  - name: "Check for missing error handling"
+    pattern: "await.*\\)"
+    files: ["**/*.ts", "**/*.tsx"]
+    message: "Ensure async operations have proper error handling (try-catch)."
+    severity: info
+
+  # Performance
+  - name: "Check for N+1 queries"
+    pattern: "for.*await.*find|forEach.*await.*find"
+    message: "Potential N+1 query. Consider using batch queries or joins."
+    severity: warning
+
+# Enable specific checkers
+checkers:
+  typescript:
+    enabled: true
+    strict_mode: true
+
+  react:
+    enabled: true
+    check_hooks: true
+    check_props: true
+
+  security:
+    enabled: true
+    check_secrets: true
+    check_vulnerabilities: true
+
+  performance:
+    enabled: true
+    check_complexity: true
+    check_bundle_size: true
+
+# Enable auto-fix for safe changes
+auto_fix:
+  enabled: false  # Disabled to require human review
+
+# Enable learning from reviews
+learn:
+  enabled: true
+  store_learnings: true

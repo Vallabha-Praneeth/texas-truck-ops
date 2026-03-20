@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional, Inject, forwardRef } from '@nestjs/common';
 import { db } from '@led-billboard/db';
 import {
     bookings,
@@ -7,9 +7,11 @@ import {
     trucks,
     requests,
     users,
+    orgMembers,
 } from '@led-billboard/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql, desc } from 'drizzle-orm';
 import { RealtimeService } from '../realtime/realtime.service';
+import { WalletService } from '../wallet/wallet.service';
 
 export enum BookingStatus {
     PENDING_DEPOSIT = 'pending_deposit',
@@ -25,7 +27,10 @@ export enum BookingStatus {
 export class BookingService {
     constructor(
         @Optional()
-        private readonly realtimeService?: RealtimeService
+        private readonly realtimeService?: RealtimeService,
+        @Optional()
+        @Inject(forwardRef(() => WalletService))
+        private readonly walletService?: WalletService
     ) {}
 
     /**
@@ -176,6 +181,23 @@ export class BookingService {
         // Validate state transition
         this.validateTransition(booking.status, newStatus);
 
+        // Payment validation for pending_deposit -> confirmed transition
+        if (
+            booking.status === BookingStatus.PENDING_DEPOSIT &&
+            newStatus === BookingStatus.CONFIRMED &&
+            this.walletService
+        ) {
+            // Verify deposit has been paid
+            const transactions = await this.walletService.getBookingTransactions(bookingId);
+            const depositTransaction = transactions.find(
+                (t) => t.type === 'deposit' && t.status === 'completed'
+            );
+
+            if (!depositTransaction) {
+                throw new Error('Deposit payment not found or not completed');
+            }
+        }
+
         // Update booking
         const updateData: any = {
             status: newStatus,
@@ -189,9 +211,78 @@ export class BookingService {
             .where(eq(bookings.id, bookingId))
             .returning();
 
+        // Process payout when booking is completed
+        if (newStatus === BookingStatus.COMPLETED && this.walletService) {
+            await this.processBookingPayout(updated);
+        }
+
         this.emitBookingStatusChanged(updated, booking.status, newStatus);
 
         return updated;
+    }
+
+    /**
+     * Process payout when booking is completed
+     * Calculates 15% platform fee and pays out to operator
+     */
+    private async processBookingPayout(booking: typeof bookings.$inferSelect) {
+        if (!this.walletService) {
+            return;
+        }
+
+        const totalAmountCents = booking.amountCents;
+        const platformFeePercent = 0.15; // 15% platform commission
+        const platformFeeCents = Math.floor(totalAmountCents * platformFeePercent);
+        const operatorPayoutCents = totalAmountCents - platformFeeCents;
+
+        // Query org_members to find a user from the operator's organization
+        // Prefer users with 'operator' or 'admin' role
+        const [orgMember] = await db
+            .select({
+                userId: orgMembers.userId,
+                role: orgMembers.role,
+            })
+            .from(orgMembers)
+            .where(eq(orgMembers.orgId, booking.operatorOrgId))
+            .orderBy(
+                desc(
+                    sql`CASE
+                        WHEN ${orgMembers.role} = 'operator' THEN 2
+                        WHEN ${orgMembers.role} = 'admin' THEN 1
+                        ELSE 0
+                    END`
+                )
+            )
+            .limit(1);
+
+        if (!orgMember) {
+            throw new Error(`No organization members found for operator org ${booking.operatorOrgId}`);
+        }
+
+        const operatorUserId = orgMember.userId;
+
+        // Create payout transaction
+        await this.walletService.createPayoutTransaction(
+            operatorUserId,
+            booking.id,
+            operatorPayoutCents,
+            {
+                bookingId: booking.id,
+                totalAmount: totalAmountCents,
+                platformFee: platformFeeCents,
+            }
+        );
+
+        // Create platform fee transaction
+        await this.walletService.createPlatformFeeTransaction(
+            operatorUserId,
+            booking.id,
+            platformFeeCents,
+            {
+                bookingId: booking.id,
+                feePercentage: platformFeePercent,
+            }
+        );
     }
 
     async assignDriverToBooking(bookingId: string, driverUserId: string) {

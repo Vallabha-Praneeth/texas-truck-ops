@@ -13,6 +13,9 @@ import { TrucksModule } from './trucks/trucks.module';
 import { SlotsModule } from './slots/slots.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { DriversModule } from './drivers/drivers.module';
+import { ProofsModule } from './proofs/proofs.module';
+import { WalletModule } from './wallet/wallet.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
     imports: [
@@ -31,10 +34,11 @@ import { DriversModule } from './drivers/drivers.module';
         SlotsModule,
         RealtimeModule,
         DriversModule,
+        ProofsModule,
+        WalletModule,
+        PaymentsModule,
         // Additional modules for future:
         // - MessagesModule
-        // - ProofsModule
-        // - WalletModule
     ],
     controllers: [AppController],
     providers: [AppService],
